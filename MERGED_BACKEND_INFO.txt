@@ -1,0 +1,28 @@
+ACHYORA merged build
+======================
+
+Base UI:
+- ACHYORA-MERGED-PREMIUM.zip
+
+Backend:
+- project-source.zip backend/shared server implementation
+
+Preserved from the new UI:
+- src/components/workspace/*
+- src/routes/workspace/*
+- src/hooks/useCreditVisibility.ts
+- src/hooks/useSingleFlight.ts
+- new routeTree.gen.ts
+- new Composer.tsx
+- new package.json (same dependencies; includes typecheck)
+
+Backend restored from old project:
+- src/lib/*
+- src/integrations/*
+- src/routes/api/*
+- supabase/*
+
+Important:
+- AI provider keys/secrets are NOT bundled.
+- The old backend still requires the same runtime environment variables it originally used.
+- This merge intentionally does not change provider logic or silently replace backend behavior.

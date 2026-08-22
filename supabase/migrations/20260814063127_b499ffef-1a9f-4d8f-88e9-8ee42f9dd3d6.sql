@@ -1,0 +1,4 @@
+-- No-op compatibility migration.
+-- The library storage policies are already created by 20260812092535.
+-- This historical duplicate used to recreate the same policy names and broke
+-- fresh database provisioning with "policy already exists".

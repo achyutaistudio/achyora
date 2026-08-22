@@ -1,0 +1,18 @@
+ACHYORA UI-ONLY FIX
+
+This package preserves the existing ACHYORA backend and application logic from the supplied working source.
+Only frontend workspace chrome/layout files were changed:
+- src/components/workspace/WorkspaceSidebar.tsx
+- src/routes/workspace/route.tsx
+
+UI changes:
+- Removed the top Chat/Sanatan switch from the workspace header.
+- Sidebar order: New Chat, Image, Library, Sanatan, More, History.
+- Sanatan remains connected to the existing /workspace/sanatan route and backend; only its sidebar presentation was changed.
+- Video remains in the project/backend/routes but is hidden from sidebar navigation.
+- History/Recents remains inside the sidebar; collapsed mode keeps a history control.
+- Settings, Account and Collapse remain at the bottom.
+- Main workspace gets the full canvas without the top mode switch.
+- Existing auth, Supabase, AI, credits, payments, server functions, history and environment variables are not intentionally changed.
+
+Do not run `vite preview` for this TanStack Start Cloudflare build. Use the project's normal dev command for local testing and the existing Cloudflare deploy flow for production.
