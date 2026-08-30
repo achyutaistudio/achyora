@@ -1,0 +1,22 @@
+ACHYORA FINAL AUTH CALLBACK FIX
+
+This build keeps the existing backend and UI intact and changes only the OAuth callback flow:
+
+1. Supabase browser client uses detectSessionInUrl: false.
+2. /auth/callback performs exactly one explicit exchangeCodeForSession(code).
+3. The exchange has a hard 15-second timeout, so the callback cannot remain on an endless "Completing sign-in…" spinner.
+4. The one-time OAuth code is removed from the URL before navigating to /workspace.
+5. The existing PKCE verifier storage remains resilient for private/incognito storage restrictions.
+6. package.json preview remains `wrangler dev`; no Vite preview command is used.
+
+LOCAL COMMANDS:
+  cd ~/Downloads/ACHYORA-AUTH-FINAL
+  npm install
+  npm run dev -- --port 8080
+
+CLOUDFLARE:
+  npm run build
+  npm run deploy
+
+Do NOT run `vite preview` for this TanStack Start/Cloudflare build.
+Keep the existing .env values from your working project when testing locally.

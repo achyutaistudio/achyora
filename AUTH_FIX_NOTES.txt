@@ -1,0 +1,18 @@
+ACHYORA AUTH CALLBACK FIX — TARGETED
+
+Fixed only the browser OAuth callback flow.
+
+What changed:
+- Supabase browser auth now uses its standard detectSessionInUrl + PKCE flow.
+- Removed the manual exchangeCodeForSession() from /auth/callback so there is only
+  one owner of the authorization-code exchange.
+- The callback waits for the resulting session with a hard timeout.
+- Session verification is bounded and cannot leave the callback spinning forever.
+- Existing workspace/backend/AI/credits/payments/library/Sanatan/video systems were
+  not intentionally changed.
+
+Important local command:
+  npm run dev -- --port 8080
+
+Do NOT use `vite preview` for this Cloudflare/TanStack Start project.
+Production remains the existing Wrangler/Cloudflare deployment flow.
