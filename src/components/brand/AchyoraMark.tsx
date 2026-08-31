@@ -27,7 +27,10 @@ export function AchyoraWordmark({
   return (
     <Link
       to={to}
-      className={cn("group inline-flex items-center gap-3 rounded-xl", className)}
+      className={cn(
+        "group inline-flex items-center gap-3 rounded-xl",
+        className,
+      )}
       aria-label="ACHYORA home"
     >
       <AchyoraMark />

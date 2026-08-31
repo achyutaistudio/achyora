@@ -7,21 +7,33 @@
 import { AiConfigurationError, AiServiceError } from "@/lib/ai/provider.server";
 import { fail, type AchyoraFailure } from "@/lib/errors";
 
-export type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | Json[]
+  | { [k: string]: Json };
 
 export function toFailure(err: unknown): AchyoraFailure {
-  if (err instanceof AiConfigurationError) return fail("AI_SERVICE_NOT_CONFIGURED", err.message);
-  console.error("achyora server failure", err instanceof Error ? err.message : err);
+  if (err instanceof AiConfigurationError)
+    return fail("AI_SERVICE_NOT_CONFIGURED", err.message);
+  console.error(
+    "achyora server failure",
+    err instanceof Error ? err.message : err,
+  );
   // A provider error already carries a readable reason (quota, rejected model,
   // rejected key). Passing it through beats showing the same generic sentence
   // for every possible failure.
-  if (err instanceof AiServiceError && err.message) return fail("AI_SERVICE_ERROR", err.message);
+  if (err instanceof AiServiceError && err.message)
+    return fail("AI_SERVICE_ERROR", err.message);
   return fail("AI_SERVICE_ERROR");
 }
 
 /** Atomic, server-side credit spend. Never called from the browser. */
 export async function spend(userId: string, amount: number, reason: string) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { supabaseAdmin } =
+    await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin.rpc("spend_credits", {
     _user_id: userId,
     _amount: amount,
@@ -33,7 +45,8 @@ export async function spend(userId: string, amount: number, reason: string) {
 }
 
 export async function refund(userId: string, amount: number, reason: string) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { supabaseAdmin } =
+    await import("@/integrations/supabase/client.server");
   let lastError: Error | null = null;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     const { data, error } = await supabaseAdmin.rpc("refund_credits", {
@@ -42,8 +55,11 @@ export async function refund(userId: string, amount: number, reason: string) {
       _reason: reason,
     });
     if (!error && typeof data === "number") return data;
-    lastError = new Error(error?.message ?? "Credit refund did not return a balance.");
-    if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, 150 * attempt));
+    lastError = new Error(
+      error?.message ?? "Credit refund did not return a balance.",
+    );
+    if (attempt < 3)
+      await new Promise((resolve) => setTimeout(resolve, 150 * attempt));
   }
   console.error("[achyora] credit refund failed after retries", {
     userId,
@@ -54,9 +70,16 @@ export async function refund(userId: string, amount: number, reason: string) {
   throw lastError ?? new Error("Credit refund failed");
 }
 
-export async function audit(userId: string, event: string, details: Record<string, Json> = {}) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  await supabaseAdmin.from("audit_logs").insert({ user_id: userId, event, details });
+export async function audit(
+  userId: string,
+  event: string,
+  details: Record<string, Json> = {},
+) {
+  const { supabaseAdmin } =
+    await import("@/integrations/supabase/client.server");
+  await supabaseAdmin
+    .from("audit_logs")
+    .insert({ user_id: userId, event, details });
 }
 
 export const RESEARCH_SHAPE = `Return JSON shaped exactly as:

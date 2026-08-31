@@ -18,10 +18,16 @@ function isNewSupabaseApiKey(value: string): boolean {
 function supabaseFetch(apiKey: string): typeof fetch {
   return (input, init) => {
     const headers = new Headers(
-      typeof Request !== "undefined" && input instanceof Request ? input.headers : undefined,
+      typeof Request !== "undefined" && input instanceof Request
+        ? input.headers
+        : undefined,
     );
-    if (init?.headers) new Headers(init.headers).forEach((v, k) => headers.set(k, v));
-    if (isNewSupabaseApiKey(apiKey) && headers.get("Authorization") === `Bearer ${apiKey}`) {
+    if (init?.headers)
+      new Headers(init.headers).forEach((v, k) => headers.set(k, v));
+    if (
+      isNewSupabaseApiKey(apiKey) &&
+      headers.get("Authorization") === `Bearer ${apiKey}`
+    ) {
       headers.delete("Authorization");
     }
     headers.set("apikey", apiKey);
@@ -37,7 +43,9 @@ export type AuthedRequest = {
 export class AuthConfigurationError extends Error {}
 
 /** Returns the caller's RLS-scoped client, or null when the token is absent/invalid. */
-export async function authenticateRequest(request: Request): Promise<AuthedRequest | null> {
+export async function authenticateRequest(
+  request: Request,
+): Promise<AuthedRequest | null> {
   const url = serverEnv("SUPABASE_URL");
   const key = serverEnv("SUPABASE_PUBLISHABLE_KEY");
   if (!url || !key) {
@@ -52,8 +60,15 @@ export async function authenticateRequest(request: Request): Promise<AuthedReque
   if (!token || token.split(".").length !== 3) return null;
 
   const supabase = createClient<Database>(url, key, {
-    global: { fetch: supabaseFetch(key), headers: { Authorization: `Bearer ${token}` } },
-    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+    global: {
+      fetch: supabaseFetch(key),
+      headers: { Authorization: `Bearer ${token}` },
+    },
+    auth: {
+      storage: undefined,
+      persistSession: false,
+      autoRefreshToken: false,
+    },
   });
 
   const { data, error } = await supabase.auth.getClaims(token);

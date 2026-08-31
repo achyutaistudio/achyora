@@ -32,7 +32,8 @@ export const Route = createFileRoute("/api/public/video-file")({
           return new Response(upstream.body, {
             status: 200,
             headers: {
-              "content-type": upstream.headers.get("content-type") ?? "video/mp4",
+              "content-type":
+                upstream.headers.get("content-type") ?? "video/mp4",
               "cache-control": "private, max-age=600",
             },
           });

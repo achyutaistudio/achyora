@@ -41,11 +41,18 @@ function avatarFrom(identity: Identity): string | null {
  * Ensures `profiles` and `user_credits` rows exist for an authenticated user.
  * Safe to call repeatedly and concurrently.
  */
-export async function ensureAccount(identity: Identity): Promise<BootstrapResult> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+export async function ensureAccount(
+  identity: Identity,
+): Promise<BootstrapResult> {
+  const { supabaseAdmin } =
+    await import("@/integrations/supabase/client.server");
 
   const [existingProfile, existingCredits] = await Promise.all([
-    supabaseAdmin.from("profiles").select("id").eq("id", identity.userId).maybeSingle(),
+    supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("id", identity.userId)
+      .maybeSingle(),
     supabaseAdmin
       .from("user_credits")
       .select("user_id")
@@ -73,7 +80,10 @@ export async function ensureAccount(identity: Identity): Promise<BootstrapResult
   if (!existingCredits.data) {
     const { error } = await supabaseAdmin
       .from("user_credits")
-      .upsert({ user_id: identity.userId }, { onConflict: "user_id", ignoreDuplicates: true });
+      .upsert(
+        { user_id: identity.userId },
+        { onConflict: "user_id", ignoreDuplicates: true },
+      );
     if (error && error.code !== "23505") throw new Error(error.message);
     creditsCreated = !error;
   }

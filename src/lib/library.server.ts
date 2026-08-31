@@ -19,7 +19,9 @@ export const DEFAULT_MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 export function maxUploadBytes(): number {
   const raw = serverEnv("LIBRARY_MAX_UPLOAD_BYTES");
   const parsed = raw ? Number(raw) : Number.NaN;
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_MAX_UPLOAD_BYTES;
+  return Number.isFinite(parsed) && parsed > 0
+    ? parsed
+    : DEFAULT_MAX_UPLOAD_BYTES;
 }
 
 const ALLOWED_MIME_PREFIXES = ["image/", "audio/", "video/", "text/"];
@@ -35,9 +37,11 @@ const ALLOWED_MIME_EXACT = new Set([
 
 export function allowedMimeTypes(): { prefixes: string[]; exact: Set<string> } {
   const extra = serverEnv("LIBRARY_EXTRA_MIME_TYPES");
-  if (!extra) return { prefixes: ALLOWED_MIME_PREFIXES, exact: ALLOWED_MIME_EXACT };
+  if (!extra)
+    return { prefixes: ALLOWED_MIME_PREFIXES, exact: ALLOWED_MIME_EXACT };
   const exact = new Set(ALLOWED_MIME_EXACT);
-  for (const t of extra.split(",").map((v) => v.trim().toLowerCase())) if (t) exact.add(t);
+  for (const t of extra.split(",").map((v) => v.trim().toLowerCase()))
+    if (t) exact.add(t);
   return { prefixes: ALLOWED_MIME_PREFIXES, exact };
 }
 
@@ -53,7 +57,8 @@ export function kindForMime(mime: string): string {
   if (value.startsWith("image/")) return "image";
   if (value.startsWith("audio/")) return "audio";
   if (value.startsWith("video/")) return "video";
-  if (value.startsWith("text/") || value === "application/pdf") return "document";
+  if (value.startsWith("text/") || value === "application/pdf")
+    return "document";
   return "file";
 }
 
@@ -72,17 +77,26 @@ export function isOwnedPath(path: string, userId: string): boolean {
   if (!path || path.includes("..") || path.startsWith("/")) return false;
   const parts = path.split("/");
   if (parts.length !== 2) return false;
-  return parts[0] === userId && Boolean(parts[1]) && parts[1] === sanitizeFileName(parts[1]!);
+  return (
+    parts[0] === userId &&
+    Boolean(parts[1]) &&
+    parts[1] === sanitizeFileName(parts[1]!)
+  );
 }
 
-export type StorageObjectFacts = { size: number; mimeType: string; name: string };
+export type StorageObjectFacts = {
+  size: number;
+  mimeType: string;
+  name: string;
+};
 
 /** Reads the object's real, server-side metadata. Never trusts the client. */
 export async function readStorageFacts(
   userId: string,
   path: string,
 ): Promise<StorageObjectFacts | null> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { supabaseAdmin } =
+    await import("@/integrations/supabase/client.server");
   const fileName = path.slice(userId.length + 1);
   const { data, error } = await supabaseAdmin.storage
     .from(LIBRARY_BUCKET)
@@ -99,12 +113,17 @@ export async function readStorageFacts(
 }
 
 export async function removeStorageObject(path: string): Promise<void> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { supabaseAdmin } =
+    await import("@/integrations/supabase/client.server");
   await supabaseAdmin.storage.from(LIBRARY_BUCKET).remove([path]);
 }
 
-export async function signStorageObject(path: string, seconds = 60): Promise<string | null> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+export async function signStorageObject(
+  path: string,
+  seconds = 60,
+): Promise<string | null> {
+  const { supabaseAdmin } =
+    await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin.storage
     .from(LIBRARY_BUCKET)
     .createSignedUrl(path, seconds);

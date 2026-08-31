@@ -3,10 +3,14 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { fail, type AchyoraResult } from "@/lib/errors";
 import { consumeRateLimit } from "@/lib/ratelimit.server";
-import { startCheckout, readSubscription, paymentsStatus } from "@/lib/payments.checkout.server";
+import {
+  startCheckout,
+  readSubscription,
+  paymentsStatus,
+} from "@/lib/payments.checkout.server";
 
-export const getPaymentsStatus = createServerFn({ method: "GET" }).handler(async () =>
-  paymentsStatus(),
+export const getPaymentsStatus = createServerFn({ method: "GET" }).handler(
+  async () => paymentsStatus(),
 );
 
 export const getSubscription = createServerFn({ method: "GET" })
@@ -25,7 +29,12 @@ export const createCheckout = createServerFn({ method: "POST" })
       data,
       context,
     }): Promise<
-      AchyoraResult<{ orderId: string; amount: number; currency: string; keyId: string }>
+      AchyoraResult<{
+        orderId: string;
+        amount: number;
+        currency: string;
+        keyId: string;
+      }>
     > => {
       const limit = await consumeRateLimit("checkout", context.userId);
       if (!limit.allowed) return fail("RATE_LIMITED");
@@ -41,8 +50,12 @@ export const createCheckout = createServerFn({ method: "POST" })
         const code = (err as { code?: string })?.code;
         if (code === "PAYMENTS_NOT_CONFIGURED")
           return fail("PAYMENTS_NOT_CONFIGURED", (err as Error).message);
-        if (code === "INVALID_INPUT") return fail("INVALID_INPUT", (err as Error).message);
-        console.error("checkout failure", err instanceof Error ? err.message : err);
+        if (code === "INVALID_INPUT")
+          return fail("INVALID_INPUT", (err as Error).message);
+        console.error(
+          "checkout failure",
+          err instanceof Error ? err.message : err,
+        );
         return fail("PAYMENT_FAILED");
       }
     },

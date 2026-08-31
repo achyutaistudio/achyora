@@ -12,7 +12,9 @@ import { supabase } from "@/integrations/supabase/client";
  * therefore bounded. A timeout means "not ready yet" rather than an endless
  * spinner; the callback route can then show a recoverable error.
  */
-export async function waitForSession(timeoutMs = 4000): Promise<Session | null> {
+export async function waitForSession(
+  timeoutMs = 4000,
+): Promise<Session | null> {
   const bounded = <T>(promise: Promise<T>, ms: number): Promise<T> =>
     new Promise<T>((resolve, reject) => {
       const timer = setTimeout(() => reject(new Error("AUTH_TIMEOUT")), ms);
@@ -31,7 +33,10 @@ export async function waitForSession(timeoutMs = 4000): Promise<Session | null> 
   // First try the already-restored session, but never let this call block the
   // page indefinitely.
   try {
-    const { data } = await bounded(supabase.auth.getSession(), Math.min(timeoutMs, 4000));
+    const { data } = await bounded(
+      supabase.auth.getSession(),
+      Math.min(timeoutMs, 4000),
+    );
     if (data.session) return data.session;
   } catch {
     // Fall through to the auth-state listener. This is intentionally quiet;

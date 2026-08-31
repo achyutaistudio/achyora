@@ -15,7 +15,8 @@ export const Route = createFileRoute("/workspace/voice")({
       { title: "Voice — ACHYORA Workspace" },
       {
         name: "description",
-        content: "Speak to ACHYORA: your recording is transcribed and answered conversationally.",
+        content:
+          "Speak to ACHYORA: your recording is transcribed and answered conversationally.",
       },
       { property: "og:title", content: "Voice — ACHYORA Workspace" },
       {
@@ -35,7 +36,9 @@ function VoiceSurface() {
   const [busy, setBusy] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [reply, setReply] = useState("");
-  const [error, setError] = useState<{ code?: string; message: string } | null>(null);
+  const [error, setError] = useState<{ code?: string; message: string } | null>(
+    null,
+  );
   const recorder = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
 
@@ -50,7 +53,9 @@ function VoiceSurface() {
       };
       rec.onstop = () => {
         stream.getTracks().forEach((t) => t.stop());
-        void upload(new Blob(chunks.current, { type: rec.mimeType || "audio/webm" }));
+        void upload(
+          new Blob(chunks.current, { type: rec.mimeType || "audio/webm" }),
+        );
       };
       rec.start();
       recorder.current = rec;
@@ -58,7 +63,8 @@ function VoiceSurface() {
       track("voice_started");
     } catch {
       setError({
-        message: "Microphone access was blocked. Allow it in your browser to use voice.",
+        message:
+          "Microphone access was blocked. Allow it in your browser to use voice.",
       });
     }
   }
@@ -76,18 +82,26 @@ function VoiceSurface() {
       const buffer = await blob.arrayBuffer();
       let binary = "";
       const bytes = new Uint8Array(buffer);
-      for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i] as number);
+      for (let i = 0; i < bytes.length; i += 1)
+        binary += String.fromCharCode(bytes[i] as number);
       const base64 = btoa(binary);
-      const result = await send({ data: { base64, mimeType: blob.type || "audio/webm" } });
+      const result = await send({
+        data: { base64, mimeType: blob.type || "audio/webm" },
+      });
       if (!result.ok) {
-        setError({ ...(result.code ? { code: result.code } : {}), message: result.message });
+        setError({
+          ...(result.code ? { code: result.code } : {}),
+          message: result.message,
+        });
         return;
       }
       setTranscript(result.transcript);
       setReply(result.reply);
       await qc.invalidateQueries({ queryKey: ["account"] });
     } catch {
-      setError({ message: "That recording could not be sent. Please try again." });
+      setError({
+        message: "That recording could not be sent. Please try again.",
+      });
     } finally {
       setBusy(false);
     }
@@ -105,7 +119,11 @@ function VoiceSurface() {
           className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
           style={{ fontWeight: 600 }}
         >
-          {recording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+          {recording ? (
+            <Square className="h-4 w-4" />
+          ) : (
+            <Mic className="h-4 w-4" />
+          )}
           {recording ? "Stop and send" : "Start recording"}
         </button>
         <p className="mt-2 text-xs text-muted-foreground">
@@ -114,19 +132,28 @@ function VoiceSurface() {
       </div>
       <div className="mt-8 space-y-4">
         {error ? (
-          <ErrorState {...(error.code ? { code: error.code } : {})} message={error.message} />
+          <ErrorState
+            {...(error.code ? { code: error.code } : {})}
+            message={error.message}
+          />
         ) : null}
         {busy ? <LoadingState label="Transcribing and replying…" /> : null}
         {transcript ? (
           <div className="rounded-2xl border border-border bg-card p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">You said</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              You said
+            </p>
             <p className="mt-1.5 text-sm text-foreground">{transcript}</p>
           </div>
         ) : null}
         {reply ? (
           <div className="rounded-2xl border border-border bg-card p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">ACHYORA</p>
-            <p className="mt-1.5 whitespace-pre-wrap text-sm text-foreground">{reply}</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              ACHYORA
+            </p>
+            <p className="mt-1.5 whitespace-pre-wrap text-sm text-foreground">
+              {reply}
+            </p>
           </div>
         ) : null}
       </div>

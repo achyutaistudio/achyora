@@ -31,7 +31,8 @@ type Particle = {
   drift: number;
 };
 
-const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+const easeInOut = (t: number) =>
+  t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 
 function readColor(el: HTMLElement, name: string, fallback: string) {
   const v = getComputedStyle(el).getPropertyValue(name).trim();
@@ -49,7 +50,9 @@ export function KrishnaFormation({ className }: { className?: string }) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     const cores = navigator.hardwareConcurrency ?? 4;
     const lowPower = cores <= 2;
     const still = reduced || lowPower;
@@ -62,7 +65,10 @@ export function KrishnaFormation({ className }: { className?: string }) {
     let height = 0;
     let start = 0;
 
-    const dpr = Math.min(window.devicePixelRatio || 1, window.innerWidth < 768 ? 1.5 : 2);
+    const dpr = Math.min(
+      window.devicePixelRatio || 1,
+      window.innerWidth < 768 ? 1.5 : 2,
+    );
     const ice = readColor(wrap, "--ice", "oklch(0.83 0.098 232)");
     const titanium = readColor(wrap, "--titanium", "oklch(0.88 0.008 250)");
 
@@ -131,8 +137,12 @@ export function KrishnaFormation({ className }: { className?: string }) {
         progress = progress <= 0 ? 0 : progress >= 1 ? 1 : easeInOut(progress);
 
         const settled = progress === 1;
-        const wobble = settled && !still ? Math.sin(now / 1400 + p.phase) * p.drift : 0;
-        const wobbleY = settled && !still ? Math.cos(now / 1700 + p.phase) * p.drift * 0.7 : 0;
+        const wobble =
+          settled && !still ? Math.sin(now / 1400 + p.phase) * p.drift : 0;
+        const wobbleY =
+          settled && !still
+            ? Math.cos(now / 1700 + p.phase) * p.drift * 0.7
+            : 0;
 
         const x = p.sx + (p.tx - p.sx) * progress + wobble;
         const y = p.sy + (p.ty - p.sy) * progress + wobbleY;
@@ -203,7 +213,8 @@ export function KrishnaFormation({ className }: { className?: string }) {
         for (let x = 0; x < 512; x += 2) {
           const i = (y * 512 + x) * 4;
           // dark pixels of the mask describe the form
-          if ((data[i] ?? 255) < 110 && (data[i + 3] ?? 0) > 10) points.push([x, y]);
+          if ((data[i] ?? 255) < 110 && (data[i + 3] ?? 0) > 10)
+            points.push([x, y]);
         }
       }
       if (points.length === 0) return;
@@ -240,7 +251,11 @@ export function KrishnaFormation({ className }: { className?: string }) {
   }, []);
 
   return (
-    <div ref={wrapRef} aria-hidden="true" className={`relative overflow-hidden ${className ?? ""}`}>
+    <div
+      ref={wrapRef}
+      aria-hidden="true"
+      className={`relative overflow-hidden ${className ?? ""}`}
+    >
       <img
         src={maskUrl}
         alt=""

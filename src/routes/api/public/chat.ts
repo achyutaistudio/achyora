@@ -28,12 +28,17 @@ export const Route = createFileRoute("/api/public/chat")({
         try {
           body = (await request.json()) as Body;
         } catch {
-          return json(fail("INVALID_INPUT", "The request body could not be read."), 400);
+          return json(
+            fail("INVALID_INPUT", "The request body could not be read."),
+            400,
+          );
         }
 
         const messages = (body.messages ?? [])
           .filter(
-            (m) => (m.role === "user" || m.role === "assistant") && typeof m.content === "string",
+            (m) =>
+              (m.role === "user" || m.role === "assistant") &&
+              typeof m.content === "string",
           )
           .slice(-MAX_TURNS)
           .map((m) => ({
@@ -41,12 +46,18 @@ export const Route = createFileRoute("/api/public/chat")({
             content: (m.content ?? "").slice(0, MAX_CHARS),
           }));
 
-        if (messages.length === 0 || messages[messages.length - 1]?.role !== "user") {
+        if (
+          messages.length === 0 ||
+          messages[messages.length - 1]?.role !== "user"
+        ) {
           return json(fail("INVALID_INPUT", "Send at least one message."), 400);
         }
 
         // Abuse protection, separate from the 10-message guest entitlement.
-        const limit = await consumeRateLimit("guest_chat", anonymousSubject(request));
+        const limit = await consumeRateLimit(
+          "guest_chat",
+          anonymousSubject(request),
+        );
         if (!limit.allowed) {
           return new Response(JSON.stringify(fail("RATE_LIMITED")), {
             status: 429,
@@ -57,7 +68,8 @@ export const Route = createFileRoute("/api/public/chat")({
           });
         }
 
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { supabaseAdmin } =
+          await import("@/integrations/supabase/client.server");
         const hash = visitorHash(request);
 
         let data: unknown;
@@ -68,7 +80,10 @@ export const Route = createFileRoute("/api/public/chat")({
             _limit: GUEST_LIMIT,
           }));
         } catch (err) {
-          console.error("guest quota unavailable", err instanceof Error ? err.message : err);
+          console.error(
+            "guest quota unavailable",
+            err instanceof Error ? err.message : err,
+          );
           return json(
             fail(
               "AI_SERVICE_NOT_CONFIGURED",
@@ -80,7 +95,10 @@ export const Route = createFileRoute("/api/public/chat")({
 
         if (error) {
           console.error("guest quota error", error.message);
-          return json(fail("UNKNOWN", "Could not verify your free message allowance."), 500);
+          return json(
+            fail("UNKNOWN", "Could not verify your free message allowance."),
+            500,
+          );
         }
 
         const quota = Array.isArray(data) ? data[0] : data;
@@ -100,10 +118,14 @@ export const Route = createFileRoute("/api/public/chat")({
         // Open the provider stream BEFORE responding, so configuration and
         // provider failures are still plain JSON errors with a real status.
         const refundAttempt = async () => {
-          const { error: refundError } = await supabaseAdmin.rpc("release_guest_message", {
-            _hash: hash,
-          });
-          if (refundError) console.error("guest quota refund failed", refundError.message);
+          const { error: refundError } = await supabaseAdmin.rpc(
+            "release_guest_message",
+            {
+              _hash: hash,
+            },
+          );
+          if (refundError)
+            console.error("guest quota refund failed", refundError.message);
         };
 
         let chunks: AsyncGenerator<string>;
@@ -118,7 +140,10 @@ export const Route = createFileRoute("/api/public/chat")({
           if (err instanceof AiConfigurationError) {
             return json(fail("AI_SERVICE_NOT_CONFIGURED", err.message), 503);
           }
-          console.error("guest chat failure", err instanceof Error ? err.message : err);
+          console.error(
+            "guest chat failure",
+            err instanceof Error ? err.message : err,
+          );
           return json(fail("AI_SERVICE_ERROR"), 502);
         }
 
@@ -130,7 +155,10 @@ export const Route = createFileRoute("/api/public/chat")({
               send({ type: "delta", text: delta });
             }
           } catch (err) {
-            console.error("guest chat stream failure", err instanceof Error ? err.message : err);
+            console.error(
+              "guest chat stream failure",
+              err instanceof Error ? err.message : err,
+            );
             if (!text) await refundAttempt();
             send({
               type: "error",

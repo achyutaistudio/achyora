@@ -18,10 +18,16 @@ export const Route = createFileRoute("/auth")({
     const authError = search["auth_error"];
     const next = search["next"];
     return {
-      ...(mode === "signup" || mode === "reset" || mode === "signin" ? { mode } : {}),
+      ...(mode === "signup" || mode === "reset" || mode === "signin"
+        ? { mode }
+        : {}),
       // Surfaced by the server /auth/callback route when sign-in fails.
-      ...(typeof authError === "string" && authError ? { auth_error: authError } : {}),
-      ...(typeof next === "string" && next.startsWith("/") && !next.startsWith("//")
+      ...(typeof authError === "string" && authError
+        ? { auth_error: authError }
+        : {}),
+      ...(typeof next === "string" &&
+      next.startsWith("/") &&
+      !next.startsWith("//")
         ? { next }
         : {}),
     };
@@ -37,7 +43,8 @@ export const Route = createFileRoute("/auth")({
       { property: "og:title", content: "Sign in — ACHYORA" },
       {
         property: "og:description",
-        content: "Create a free ACHYORA account to keep chatting and unlock the workspace.",
+        content:
+          "Create a free ACHYORA account to keep chatting and unlock the workspace.",
       },
       { name: "robots", content: "noindex" },
     ],

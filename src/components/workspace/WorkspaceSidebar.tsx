@@ -34,7 +34,12 @@ const PRIMARY_NAV = [
   { to: "/workspace/chat", label: "Chat", icon: MessageSquarePlus },
   { to: "/workspace/image", label: "Image", icon: ImageIcon },
   { to: "/workspace/library", label: "Library", icon: FolderClosed },
-  { to: "/workspace/sanatan", label: "Sanatan", icon: BookOpenText, avatar: true },
+  {
+    to: "/workspace/sanatan",
+    label: "Sanatan",
+    icon: BookOpenText,
+    avatar: true,
+  },
 ] as const;
 
 const MORE_NAV = [
@@ -67,7 +72,10 @@ function NavItem({
         to={to}
         title={collapsed ? label : undefined}
         onClick={onNavigate}
-        className={cn(ITEM_BASE, collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5")}
+        className={cn(
+          ITEM_BASE,
+          collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5",
+        )}
         activeProps={{
           className: cn(
             ITEM_BASE,
@@ -87,15 +95,28 @@ function NavItem({
             <Icon className="h-4 w-4" />
           </span>
         ) : (
-          <Icon className="h-[1.05rem] w-[1.05rem] shrink-0" aria-hidden="true" />
+          <Icon
+            className="h-[1.05rem] w-[1.05rem] shrink-0"
+            aria-hidden="true"
+          />
         )}
-        {collapsed ? <span className="sr-only">{label}</span> : <span>{label}</span>}
+        {collapsed ? (
+          <span className="sr-only">{label}</span>
+        ) : (
+          <span>{label}</span>
+        )}
       </Link>
     </li>
   );
 }
 
-function NewChatButton({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
+function NewChatButton({
+  collapsed,
+  onNavigate,
+}: {
+  collapsed: boolean;
+  onNavigate?: () => void;
+}) {
   return (
     <button
       type="button"
@@ -106,26 +127,39 @@ function NewChatButton({ collapsed, onNavigate }: { collapsed: boolean; onNaviga
       title={collapsed ? "New chat" : undefined}
       className={cn(
         "flex w-full items-center rounded-xl border border-primary/25 bg-primary/10 text-sm text-foreground shadow-sm transition-colors hover:bg-primary/15",
-        collapsed ? "justify-center px-0 py-2.5" : "justify-start gap-2 px-3 py-2.5",
+        collapsed
+          ? "justify-center px-0 py-2.5"
+          : "justify-start gap-2 px-3 py-2.5",
       )}
       style={{ fontWeight: 650 }}
     >
-      <MessageSquarePlus className="h-[1.05rem] w-[1.05rem] shrink-0" aria-hidden="true" />
-      {collapsed ? <span className="sr-only">New chat</span> : <span>New chat</span>}
+      <MessageSquarePlus
+        className="h-[1.05rem] w-[1.05rem] shrink-0"
+        aria-hidden="true"
+      />
+      {collapsed ? (
+        <span className="sr-only">New chat</span>
+      ) : (
+        <span>New chat</span>
+      )}
     </button>
   );
 }
 
 function HistorySection({ collapsed }: { collapsed: boolean }) {
   const listFn = useServerFn(listConversations);
-  const conversations = useQuery({ queryKey: ["conversations"], queryFn: () => listFn() });
+  const conversations = useQuery({
+    queryKey: ["conversations"],
+    queryFn: () => listFn(),
+  });
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(true);
 
   useEffect(() => {
     const refresh = () => void conversations.refetch();
     window.addEventListener(CHAT_HISTORY_REFRESH_EVENT, refresh);
-    return () => window.removeEventListener(CHAT_HISTORY_REFRESH_EVENT, refresh);
+    return () =>
+      window.removeEventListener(CHAT_HISTORY_REFRESH_EVENT, refresh);
   }, [conversations]);
 
   const rows = useMemo(() => {
@@ -197,7 +231,10 @@ function HistorySection({ collapsed }: { collapsed: boolean }) {
             ) : (
               <ul className="space-y-0.5">
                 {rows.map((conversation) => (
-                  <li key={conversation.id} className="group/history flex items-center gap-1">
+                  <li
+                    key={conversation.id}
+                    className="group/history flex items-center gap-1"
+                  >
                     <button
                       type="button"
                       onClick={() => requestOpenChat(String(conversation.id))}
@@ -243,8 +280,17 @@ export function WorkspaceSidebar({
         collapsed ? "px-2 py-4" : "px-3 py-4",
       )}
     >
-      <div className={cn("flex items-center", collapsed ? "justify-center" : "gap-2.5 px-1")}>
-        <Link to="/workspace/chat" aria-label="ACHYORA workspace" className="shrink-0">
+      <div
+        className={cn(
+          "flex items-center",
+          collapsed ? "justify-center" : "gap-2.5 px-1",
+        )}
+      >
+        <Link
+          to="/workspace/chat"
+          aria-label="ACHYORA workspace"
+          className="shrink-0"
+        >
           <AchyoraMark className="h-8 w-8" />
         </Link>
         {collapsed ? null : (
@@ -261,7 +307,10 @@ export function WorkspaceSidebar({
         aria-label="Workspace"
         className="relative mt-7 min-h-0 flex flex-1 flex-col overflow-visible"
       >
-        <NewChatButton collapsed={collapsed} {...(onNavigate ? { onNavigate } : {})} />
+        <NewChatButton
+          collapsed={collapsed}
+          {...(onNavigate ? { onNavigate } : {})}
+        />
 
         <ul className={cn("space-y-0.5", collapsed ? "mt-3" : "mt-3")}>
           {PRIMARY_NAV.map((item) => (
@@ -287,7 +336,10 @@ export function WorkspaceSidebar({
               onClick={() => setCollapsedMoreOpen((v) => !v)}
               className="flex w-full items-center justify-center rounded-xl py-2.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             >
-              <MoreHorizontal className="h-[1.05rem] w-[1.05rem]" aria-hidden="true" />
+              <MoreHorizontal
+                className="h-[1.05rem] w-[1.05rem]"
+                aria-hidden="true"
+              />
             </button>
             {collapsedMoreOpen ? (
               <div className="absolute left-[calc(100%+0.5rem)] top-0 z-50 w-48 rounded-xl border border-sidebar-border bg-popover p-1.5 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.9)]">
@@ -366,10 +418,16 @@ export function WorkspaceSidebar({
           )}
         >
           {collapsed ? (
-            <PanelLeftOpen className="h-[1.05rem] w-[1.05rem]" aria-hidden="true" />
+            <PanelLeftOpen
+              className="h-[1.05rem] w-[1.05rem]"
+              aria-hidden="true"
+            />
           ) : (
             <>
-              <PanelLeftClose className="h-[1.05rem] w-[1.05rem]" aria-hidden="true" />
+              <PanelLeftClose
+                className="h-[1.05rem] w-[1.05rem]"
+                aria-hidden="true"
+              />
               <span>Collapse</span>
             </>
           )}

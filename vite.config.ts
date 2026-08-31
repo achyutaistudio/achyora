@@ -62,5 +62,7 @@ export default defineConfig({
       serverDir: "dist/server",
       publicDir: "dist/client",
     },
-  } as unknown as { output: { dir: string; serverDir: string; publicDir: string } },
+  } as unknown as {
+    output: { dir: string; serverDir: string; publicDir: string };
+  },
 });

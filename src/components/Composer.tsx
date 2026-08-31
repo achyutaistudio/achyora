@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+} from "react";
 import { ArrowUp, Command, Plus, Square, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -46,7 +52,8 @@ export function Composer({
   // per distinct value and never clobbers what the user is currently typing.
   const lastPrefill = useRef<string | undefined>(initialValue);
   useEffect(() => {
-    if (initialValue === undefined || initialValue === lastPrefill.current) return;
+    if (initialValue === undefined || initialValue === lastPrefill.current)
+      return;
     lastPrefill.current = initialValue;
     setValue(initialValue);
   }, [initialValue]);
@@ -101,7 +108,8 @@ export function Composer({
               className="hidden"
               onChange={(e) => {
                 const picked = Array.from(e.target.files ?? []);
-                if (picked.length) setFiles((prev) => [...prev, ...picked].slice(0, 5));
+                if (picked.length)
+                  setFiles((prev) => [...prev, ...picked].slice(0, 5));
                 e.target.value = "";
               }}
             />
@@ -128,9 +136,11 @@ export function Composer({
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-            className={cn(
-              "max-h-[220px] w-full resize-none overflow-y-auto bg-transparent px-1 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-            size === "lg" ? "text-base sm:text-[1.05rem]" : "text-sm sm:text-base",
+          className={cn(
+            "max-h-[220px] w-full resize-none overflow-y-auto bg-transparent px-1 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+            size === "lg"
+              ? "text-base sm:text-[1.05rem]"
+              : "text-sm sm:text-base",
           )}
         />
         {busy && onStop ? (
@@ -164,7 +174,9 @@ export function Composer({
               <span className="truncate">{f.name}</span>
               <button
                 type="button"
-                onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                onClick={() =>
+                  setFiles((prev) => prev.filter((_, idx) => idx !== i))
+                }
                 aria-label={`Remove ${f.name}`}
                 className="shrink-0 transition-colors hover:text-foreground"
               >
@@ -176,7 +188,13 @@ export function Composer({
       ) : null}
 
       <div className="mt-2 flex items-center justify-between gap-3 px-1">
-        {hint ? <p className="min-w-0 truncate text-xs text-muted-foreground">{hint}</p> : <span />}
+        {hint ? (
+          <p className="min-w-0 truncate text-xs text-muted-foreground">
+            {hint}
+          </p>
+        ) : (
+          <span />
+        )}
         <span className="hidden shrink-0 items-center gap-1 text-[0.65rem] text-muted-foreground sm:inline-flex">
           <Command className="h-3 w-3" aria-hidden="true" />
           <span>K</span>

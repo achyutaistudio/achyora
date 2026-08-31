@@ -25,7 +25,8 @@ export const Route = createFileRoute("/sanatan")({
       { property: "og:title", content: "Sanatan Research — ACHYORA" },
       {
         property: "og:description",
-        content: "Scholarly study of Indian texts with labelled evidence and honest uncertainty.",
+        content:
+          "Scholarly study of Indian texts with labelled evidence and honest uncertainty.",
       },
     ],
   }),
@@ -40,18 +41,25 @@ function Sanatan() {
         <p className="text-[0.66rem] uppercase tracking-[0.24em] text-muted-foreground">
           Sanatan Research
         </p>
-        <h1 className="mt-4 text-3xl text-foreground sm:text-4xl" style={{ fontWeight: 800 }}>
+        <h1
+          className="mt-4 text-3xl text-foreground sm:text-4xl"
+          style={{ fontWeight: 800 }}
+        >
           Depth without distortion
         </h1>
         <p className="mt-4 max-w-2xl text-sm text-muted-foreground sm:text-base">
-          ACHYORA approaches Sanatan questions the way a careful scholar would: name the source,
-          separate tradition from history, mark what is debated, and say plainly when something is
-          unknown. It does not preach, it does not dismiss, and it never fabricates a citation.
+          ACHYORA approaches Sanatan questions the way a careful scholar would:
+          name the source, separate tradition from history, mark what is
+          debated, and say plainly when something is unknown. It does not
+          preach, it does not dismiss, and it never fabricates a citation.
         </p>
         <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2">
           {LABELS.map(([title, body]) => (
             <div key={title} className="bg-card p-6">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+              <h2
+                className="text-base text-foreground"
+                style={{ fontWeight: 600 }}
+              >
                 {title}
               </h2>
               <p className="mt-1.5 text-sm text-muted-foreground">{body}</p>

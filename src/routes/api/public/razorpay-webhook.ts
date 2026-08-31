@@ -56,9 +56,11 @@ export const Route = createFileRoute("/api/public/razorpay-webhook")({
         const event = payload.event ?? "";
 
         // Only payment/order events can change this order-based entitlement model.
-        const successEvent = event === "payment.captured" || event === "order.paid";
+        const successEvent =
+          event === "payment.captured" || event === "order.paid";
         const failedEvent = event === "payment.failed";
-        if (!successEvent && !failedEvent) return new Response("ignored", { status: 200 });
+        if (!successEvent && !failedEvent)
+          return new Response("ignored", { status: 200 });
 
         if (!userId || !plan || plan.id === "free") {
           return new Response("Invalid order mapping", { status: 400 });
@@ -66,7 +68,8 @@ export const Route = createFileRoute("/api/public/razorpay-webhook")({
 
         const orderId = payment?.order_id ?? order?.id;
         const currency = entity?.currency;
-        if (!orderId || !currency) return new Response("Invalid order payload", { status: 400 });
+        if (!orderId || !currency)
+          return new Response("Invalid order payload", { status: 400 });
         if (currency !== "INR" && currency !== "USD")
           return new Response("Invalid currency", { status: 400 });
 
@@ -85,26 +88,35 @@ export const Route = createFileRoute("/api/public/razorpay-webhook")({
           request.headers.get("x-razorpay-event-id") ??
           `${event}:${orderId}:${await sha256Hex(raw)}`;
 
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data, error } = await supabaseAdmin.rpc("process_razorpay_webhook", {
-          _event_id: eventId,
-          _event: event,
-          _user_id: userId,
-          _plan_id: plan.id,
-          _currency: currency,
-          _provider_order_id: orderId,
-          _period_days: plan.periodDays ?? 0,
-          _is_success: successEvent,
-        });
+        const { supabaseAdmin } =
+          await import("@/integrations/supabase/client.server");
+        const { data, error } = await supabaseAdmin.rpc(
+          "process_razorpay_webhook",
+          {
+            _event_id: eventId,
+            _event: event,
+            _user_id: userId,
+            _plan_id: plan.id,
+            _currency: currency,
+            _provider_order_id: orderId,
+            _period_days: plan.periodDays ?? 0,
+            _is_success: successEvent,
+          },
+        );
 
         if (error) {
-          console.error("[achyora] Razorpay webhook transaction failed", error.message);
+          console.error(
+            "[achyora] Razorpay webhook transaction failed",
+            error.message,
+          );
           return new Response("Webhook processing failed", { status: 500 });
         }
 
         const status = Array.isArray(data) ? data[0]?.status : undefined;
-        if (status === "duplicate") return new Response("duplicate", { status: 200 });
-        if (status !== "processed") return new Response("Webhook not processed", { status: 500 });
+        if (status === "duplicate")
+          return new Response("duplicate", { status: 200 });
+        if (status !== "processed")
+          return new Response("Webhook not processed", { status: 500 });
         return new Response("ok", { status: 200 });
       },
     },
@@ -112,6 +124,11 @@ export const Route = createFileRoute("/api/public/razorpay-webhook")({
 });
 
 async function sha256Hex(input: string): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
-  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(input),
+  );
+  return [...new Uint8Array(digest)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }

@@ -75,7 +75,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
 
         <div className="flex items-center gap-1 md:hidden">
           {loading ? null : user ? <UserMenu user={user} /> : null}
-            <button
+          <button
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
@@ -85,7 +85,11 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
               overlay ? "border-white/15 bg-white/5" : "border-border",
             )}
           >
-            {open ? <X className="h-4.5 w-4.5" /> : <Menu className="h-4.5 w-4.5" />}
+            {open ? (
+              <X className="h-4.5 w-4.5" />
+            ) : (
+              <Menu className="h-4.5 w-4.5" />
+            )}
           </button>
         </div>
       </div>
@@ -94,7 +98,9 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
         <div
           className={cn(
             "border-t md:hidden",
-            overlay ? "border-white/10 bg-[#080b15]/90" : "border-border/60 bg-background",
+            overlay
+              ? "border-white/10 bg-[#080b15]/90"
+              : "border-border/60 bg-background",
           )}
         >
           <nav
@@ -171,13 +177,22 @@ export function SiteFooter() {
           className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground"
           aria-label="Footer"
         >
-          <Link to="/pricing" className="transition-colors hover:text-foreground">
+          <Link
+            to="/pricing"
+            className="transition-colors hover:text-foreground"
+          >
             Pricing
           </Link>
-          <Link to="/sanatan" className="transition-colors hover:text-foreground">
+          <Link
+            to="/sanatan"
+            className="transition-colors hover:text-foreground"
+          >
             Sanatan Research
           </Link>
-          <Link to="/responsible-ai" className="transition-colors hover:text-foreground">
+          <Link
+            to="/responsible-ai"
+            className="transition-colors hover:text-foreground"
+          >
             Responsible AI
           </Link>
           <Link
@@ -190,7 +205,8 @@ export function SiteFooter() {
         </nav>
       </div>
       <p className="mx-auto mt-8 w-full max-w-6xl px-4 text-xs text-muted-foreground sm:px-6">
-        © {new Date().getFullYear()} ACHYORA. An independent Indian-origin AI platform.
+        © {new Date().getFullYear()} ACHYORA. An independent Indian-origin AI
+        platform.
       </p>
     </footer>
   );

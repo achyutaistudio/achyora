@@ -16,12 +16,14 @@ export const Route = createFileRoute("/workspace/research")({
       { title: "Research — ACHYORA Workspace" },
       {
         name: "description",
-        content: "Evidence-first research briefs with explicit confidence and open questions.",
+        content:
+          "Evidence-first research briefs with explicit confidence and open questions.",
       },
       { property: "og:title", content: "Research — ACHYORA Workspace" },
       {
         property: "og:description",
-        content: "Structured research with claims, basis and stated uncertainty.",
+        content:
+          "Structured research with claims, basis and stated uncertainty.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -43,7 +45,9 @@ function ResearchSurface() {
   const run = useServerFn(runResearch);
   const [busy, setBusy] = useState(false);
   const [brief, setBrief] = useState<Brief | null>(null);
-  const [error, setError] = useState<{ code?: string; message: string } | null>(null);
+  const [error, setError] = useState<{ code?: string; message: string } | null>(
+    null,
+  );
 
   async function submit(query: string) {
     setBusy(true);
@@ -53,7 +57,10 @@ function ResearchSurface() {
     try {
       const result = await run({ data: { query } });
       if (!result.ok) {
-        setError({ ...(result.code ? { code: result.code } : {}), message: result.message });
+        setError({
+          ...(result.code ? { code: result.code } : {}),
+          message: result.message,
+        });
         return;
       }
       setBrief(result.brief as unknown as Brief);
@@ -81,7 +88,10 @@ function ResearchSurface() {
 
       <div className="mt-8">
         {error ? (
-          <ErrorState {...(error.code ? { code: error.code } : {})} message={error.message} />
+          <ErrorState
+            {...(error.code ? { code: error.code } : {})}
+            message={error.message}
+          />
         ) : null}
         {busy ? <LoadingState label="Researching…" /> : null}
         {!busy && !brief && !error ? (
@@ -99,7 +109,9 @@ function ResearchSurface() {
 export function BriefView({
   brief,
 }: {
-  brief: Brief & { perspectives?: Array<{ tradition: string; position: string }> };
+  brief: Brief & {
+    perspectives?: Array<{ tradition: string; position: string }>;
+  };
 }) {
   return (
     <article className="space-y-6">
@@ -165,15 +177,16 @@ export function BriefView({
           <ul className="space-y-2 text-sm text-muted-foreground">
             {brief.sources.map((s, i) => (
               <li key={i}>
-                <span className="text-foreground">{s.title}</span> — {s.reference}
+                <span className="text-foreground">{s.title}</span> —{" "}
+                {s.reference}
                 {s.note ? ` (${s.note})` : ""}
               </li>
             ))}
           </ul>
         ) : (
           <p className="text-sm text-muted-foreground">
-            No verifiable source was offered for this answer. Treat it as a starting point, not a
-            citation.
+            No verifiable source was offered for this answer. Treat it as a
+            starting point, not a citation.
           </p>
         )}
       </Section>
@@ -181,7 +194,13 @@ export function BriefView({
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <section>
       <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>

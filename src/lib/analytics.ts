@@ -47,10 +47,15 @@ export function initAnalytics() {
   if (ready || typeof window === "undefined") return;
   ready = true;
   const key = import.meta.env["VITE_POSTHOG_KEY"];
-  const host = import.meta.env["VITE_POSTHOG_HOST"] ?? "https://us.i.posthog.com";
+  const host =
+    import.meta.env["VITE_POSTHOG_HOST"] ?? "https://us.i.posthog.com";
   const ph = client();
   if (!key || !ph) return;
-  ph.init(key, { api_host: host, capture_pageview: false, person_profiles: "identified_only" });
+  ph.init(key, {
+    api_host: host,
+    capture_pageview: false,
+    person_profiles: "identified_only",
+  });
 }
 
 /** Never pass prompt text, message bodies, emails or file contents here. */

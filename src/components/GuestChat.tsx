@@ -55,15 +55,21 @@ export function GuestChat() {
           if (!started) {
             started = true;
             setBusy(false);
-            setMessages((prev) => [...prev, { id: replyId, role: "assistant", content: text }]);
+            setMessages((prev) => [
+              ...prev,
+              { id: replyId, role: "assistant", content: text },
+            ]);
             return;
           }
           setMessages((prev) =>
-            prev.map((m) => (m.id === replyId ? { ...m, content: m.content + text } : m)),
+            prev.map((m) =>
+              m.id === replyId ? { ...m, content: m.content + text } : m,
+            ),
           );
         },
         onDone: (meta) => {
-          if (typeof meta["remaining"] === "number") setRemaining(meta["remaining"] as number);
+          if (typeof meta["remaining"] === "number")
+            setRemaining(meta["remaining"] as number);
         },
         onError: (failure) => {
           if (failure.code === "GUEST_LIMIT_REACHED") {
@@ -72,12 +78,18 @@ export function GuestChat() {
             track("guest_limit_reached");
             return;
           }
-          setError({ code: failure.code as ErrorCode, message: failure.message });
+          setError({
+            code: failure.code as ErrorCode,
+            message: failure.message,
+          });
         },
       });
     } catch (err) {
       if ((err as Error).name === "AbortError") return;
-      setError({ code: "UNKNOWN", message: "The connection dropped. Please try again." });
+      setError({
+        code: "UNKNOWN",
+        message: "The connection dropped. Please try again.",
+      });
     } finally {
       setBusy(false);
       abortRef.current = null;
@@ -91,7 +103,10 @@ export function GuestChat() {
     }
     track("guest_message_sent");
     const history = messages;
-    setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "user", content: text }]);
+    setMessages((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), role: "user", content: text },
+    ]);
     void send(text, history);
   }
 
@@ -109,13 +124,21 @@ export function GuestChat() {
     <div className="w-full">
       {messages.length > 0 ? (
         <div className="mb-6 max-h-[52vh] overflow-y-auto pr-1">
-          <MessageList messages={messages} pending={busy} onRetry={busy ? undefined : retry} />
+          <MessageList
+            messages={messages}
+            pending={busy}
+            onRetry={busy ? undefined : retry}
+          />
         </div>
       ) : null}
 
       {error ? (
         <div className="mb-4">
-          <ErrorState code={error.code} message={error.message} onRetry={retry} />
+          <ErrorState
+            code={error.code}
+            message={error.message}
+            onRetry={retry}
+          />
         </div>
       ) : null}
 
@@ -125,7 +148,8 @@ export function GuestChat() {
             Continue your conversation with ACHYORA
           </h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            Create a free account to keep chatting, save conversations and unlock the workspace.
+            Create a free account to keep chatting, save conversations and
+            unlock the workspace.
           </p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
             <Link

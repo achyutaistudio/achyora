@@ -15,21 +15,28 @@ export type StreamEvent =
 
 export type StreamWriter = (event: StreamEvent) => void;
 
-export function sseResponse(run: (send: StreamWriter) => Promise<void>): Response {
+export function sseResponse(
+  run: (send: StreamWriter) => Promise<void>,
+): Response {
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       let closed = false;
       const send: StreamWriter = (event) => {
         if (closed) return;
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify(event)}\n\n`),
+        );
       };
       try {
         await run(send);
       } catch (err) {
         // Never leak internals: the caller maps known failures itself, this is
         // the last-resort guard so the UI can never hang on "thinking".
-        console.error("chat stream failed", err instanceof Error ? err.message : err);
+        console.error(
+          "chat stream failed",
+          err instanceof Error ? err.message : err,
+        );
         send({
           type: "error",
           code: "AI_SERVICE_ERROR",

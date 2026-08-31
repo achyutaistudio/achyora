@@ -37,14 +37,18 @@ function bags(): EnvBag[] {
     // during the generic TanStack Start SSR build.
     g.__env__ ?? {},
 
-    typeof process !== "undefined" && process.env ? (process.env as EnvBag) : {},
+    typeof process !== "undefined" && process.env
+      ? (process.env as EnvBag)
+      : {},
 
     g.process?.env ?? {},
   ];
 }
 
 function clean(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : undefined;
 }
 
 /**

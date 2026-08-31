@@ -16,12 +16,14 @@ export const Route = createFileRoute("/workspace/image")({
       { title: "Image — ACHYORA Workspace" },
       {
         name: "description",
-        content: "Generate images with the AI provider configured on this ACHYORA deployment.",
+        content:
+          "Generate images with the AI provider configured on this ACHYORA deployment.",
       },
       { property: "og:title", content: "Image — ACHYORA Workspace" },
       {
         property: "og:description",
-        content: "Describe an image and ACHYORA renders it with your configured provider.",
+        content:
+          "Describe an image and ACHYORA renders it with your configured provider.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -47,7 +49,9 @@ function ImageSurface() {
   const [lastPrompt, setLastPrompt] = useState("");
   const [ratio, setRatio] = useState<string>("1:1");
   const [style, setStyle] = useState<string>("none");
-  const [error, setError] = useState<{ code?: string; message: string } | null>(null);
+  const [error, setError] = useState<{ code?: string; message: string } | null>(
+    null,
+  );
 
   async function submit(prompt: string) {
     setBusy(true);
@@ -56,9 +60,14 @@ function ImageSurface() {
     setLastPrompt(prompt);
     track("image_generation_started");
     try {
-      const result = await generate({ data: { prompt, aspectRatio: ratio, style } });
+      const result = await generate({
+        data: { prompt, aspectRatio: ratio, style },
+      });
       if (!result.ok) {
-        setError({ ...(result.code ? { code: result.code } : {}), message: result.message });
+        setError({
+          ...(result.code ? { code: result.code } : {}),
+          message: result.message,
+        });
         return;
       }
       setUrl(result.url);
@@ -77,8 +86,18 @@ function ImageSurface() {
       description="Describe what you want. Nothing is generated unless a real image provider is configured here."
     >
       <div className="mt-6 flex flex-wrap gap-3">
-        <Select label="Aspect ratio" value={ratio} onChange={setRatio} options={[...RATIOS]} />
-        <Select label="Style" value={style} onChange={setStyle} options={[...STYLES]} />
+        <Select
+          label="Aspect ratio"
+          value={ratio}
+          onChange={setRatio}
+          options={[...RATIOS]}
+        />
+        <Select
+          label="Style"
+          value={style}
+          onChange={setStyle}
+          options={[...STYLES]}
+        />
       </div>
 
       <div className="mt-5">
@@ -92,7 +111,10 @@ function ImageSurface() {
 
       <div className="mt-8">
         {error ? (
-          <ErrorState {...(error.code ? { code: error.code } : {})} message={error.message} />
+          <ErrorState
+            {...(error.code ? { code: error.code } : {})}
+            message={error.message}
+          />
         ) : null}
         {busy ? <LoadingState label="Rendering your image…" /> : null}
         {!busy && !url && !error ? (

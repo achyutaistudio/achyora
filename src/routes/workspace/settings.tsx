@@ -17,11 +17,15 @@ export const Route = createFileRoute("/workspace/settings")({
   head: () => ({
     meta: [
       { title: "Settings — ACHYORA Workspace" },
-      { name: "description", content: "Manage your ACHYORA plan, credits and account." },
+      {
+        name: "description",
+        content: "Manage your ACHYORA plan, credits and account.",
+      },
       { property: "og:title", content: "Settings — ACHYORA Workspace" },
       {
         property: "og:description",
-        content: "Plan, credits, billing and sign-out for your ACHYORA account.",
+        content:
+          "Plan, credits, billing and sign-out for your ACHYORA account.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -36,8 +40,14 @@ function SettingsSurface() {
   const paymentsFn = useServerFn(getPaymentsStatus);
   const queryClient = useQueryClient();
 
-  const account = useQuery({ queryKey: ["account"], queryFn: () => accountFn() });
-  const payments = useQuery({ queryKey: ["payments-status"], queryFn: () => paymentsFn() });
+  const account = useQuery({
+    queryKey: ["account"],
+    queryFn: () => accountFn(),
+  });
+  const payments = useQuery({
+    queryKey: ["payments-status"],
+    queryFn: () => paymentsFn(),
+  });
   const [currency, setCurrency] = useState<"INR" | "USD">("INR");
   const [busy, setBusy] = useState<string | null>(null);
   const { showCredits, setShowCredits } = useCreditVisibility();
@@ -64,7 +74,8 @@ function SettingsSurface() {
       script.async = true;
       script.dataset["razorpayCheckout"] = "true";
       script.onload = () => resolve();
-      script.onerror = () => reject(new Error("Could not load Razorpay checkout."));
+      script.onerror = () =>
+        reject(new Error("Could not load Razorpay checkout."));
       document.head.appendChild(script);
     });
   }
@@ -80,8 +91,11 @@ function SettingsSurface() {
       }
       await loadRazorpay();
       type RazorpayInstance = { open: () => void };
-      type RazorpayConstructor = new (options: Record<string, unknown>) => RazorpayInstance;
-      const Razorpay = (window as Window & { Razorpay?: RazorpayConstructor }).Razorpay;
+      type RazorpayConstructor = new (
+        options: Record<string, unknown>,
+      ) => RazorpayInstance;
+      const Razorpay = (window as Window & { Razorpay?: RazorpayConstructor })
+        .Razorpay;
       if (!Razorpay) throw new Error("Razorpay checkout is unavailable.");
 
       const plan = PLANS.find((item) => item.id === planId);
@@ -96,10 +110,18 @@ function SettingsSurface() {
         theme: { color: "#111827" },
         handler: () => {
           track("subscription_completed");
-          toast.success("Payment received. Your plan will activate after secure verification.");
+          toast.success(
+            "Payment received. Your plan will activate after secure verification.",
+          );
           void queryClient.invalidateQueries({ queryKey: ["account"] });
-          setTimeout(() => void queryClient.invalidateQueries({ queryKey: ["account"] }), 3000);
-          setTimeout(() => void queryClient.invalidateQueries({ queryKey: ["account"] }), 8000);
+          setTimeout(
+            () => void queryClient.invalidateQueries({ queryKey: ["account"] }),
+            3000,
+          );
+          setTimeout(
+            () => void queryClient.invalidateQueries({ queryKey: ["account"] }),
+            8000,
+          );
         },
         modal: { ondismiss: () => toast.message("Payment window closed.") },
       });
@@ -107,7 +129,9 @@ function SettingsSurface() {
       track("checkout_started");
     } catch (err) {
       console.error("checkout UI failure", err);
-      toast.error(err instanceof Error ? err.message : "Could not open payment checkout.");
+      toast.error(
+        err instanceof Error ? err.message : "Could not open payment checkout.",
+      );
     } finally {
       setBusy(null);
     }
@@ -119,9 +143,14 @@ function SettingsSurface() {
   }
 
   return (
-    <WorkspacePage title="Settings" description="Your account, preferences and plan.">
+    <WorkspacePage
+      title="Settings"
+      description="Your account, preferences and plan."
+    >
       <section className="mt-6 rounded-2xl border border-border bg-card p-5">
-        <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Account</p>
+        <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+          Account
+        </p>
         {account.isPending ? (
           <LoadingState label="Loading…" className="mt-3" />
         ) : (
@@ -133,7 +162,9 @@ function SettingsSurface() {
               Plan: {account.data?.subscription?.plan ?? "free"} (
               {account.data?.subscription?.status ?? "inactive"})
             </p>
-            {showCredits ? <p>Credits: {account.data?.credits?.balance ?? 0}</p> : null}
+            {showCredits ? (
+              <p>Credits: {account.data?.credits?.balance ?? 0}</p>
+            ) : null}
           </div>
         )}
         <button
@@ -145,14 +176,17 @@ function SettingsSurface() {
       </section>
 
       <section className="mt-6 rounded-2xl border border-border bg-card p-5">
-        <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Preferences</p>
+        <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+          Preferences
+        </p>
         <div className="mt-3 flex items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>
               Show credit balance
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Display only. Turning this on or off never changes how credits are counted or spent.
+              Display only. Turning this on or off never changes how credits are
+              counted or spent.
             </p>
           </div>
           <button
@@ -162,7 +196,9 @@ function SettingsSurface() {
             aria-label="Show credit balance"
             onClick={() => setShowCredits(!showCredits)}
             className={`relative mt-0.5 inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors ${
-              showCredits ? "border-ring bg-primary" : "border-input bg-secondary"
+              showCredits
+                ? "border-ring bg-primary"
+                : "border-input bg-secondary"
             }`}
           >
             <span
@@ -200,11 +236,20 @@ function SettingsSurface() {
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {PLANS.filter((p) => p.id !== "free").map((plan) => (
-            <div key={plan.id} className="rounded-2xl border border-border bg-card p-5">
-              <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+            <div
+              key={plan.id}
+              className="rounded-2xl border border-border bg-card p-5"
+            >
+              <p
+                className="text-sm text-foreground"
+                style={{ fontWeight: 600 }}
+              >
                 {plan.name}
               </p>
-              <p className="mt-1 text-2xl text-foreground" style={{ fontWeight: 700 }}>
+              <p
+                className="mt-1 text-2xl text-foreground"
+                style={{ fontWeight: 700 }}
+              >
                 {plan.price[currency]}
               </p>
               <p className="text-xs text-muted-foreground">{plan.cadence}</p>

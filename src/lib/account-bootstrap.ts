@@ -6,11 +6,16 @@ const BOOTSTRAP_TIMEOUT_MS = 5_000;
  * Account provisioning is best-effort after authentication. It must never
  * delay navigation or turn a valid session into an authentication failure.
  */
-export function startAccountBootstrap(bootstrapAccount: BootstrapAccount): void {
+export function startAccountBootstrap(
+  bootstrapAccount: BootstrapAccount,
+): void {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(
-      () => reject(new Error("Account bootstrap timed out and will be retried later.")),
+      () =>
+        reject(
+          new Error("Account bootstrap timed out and will be retried later."),
+        ),
       BOOTSTRAP_TIMEOUT_MS,
     );
   });

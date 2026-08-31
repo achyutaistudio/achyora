@@ -84,9 +84,10 @@ export function gatewayConfigurationError(): AiConfigurationError | undefined {
   const baseUrl = gatewayBase();
   const key = env("AI_GATEWAY_API_KEY");
   if (baseUrl && key) return undefined;
-  const missing = [!baseUrl && "AI_GATEWAY_BASE_URL", !key && "AI_GATEWAY_API_KEY"].filter(
-    Boolean,
-  ) as string[];
+  const missing = [
+    !baseUrl && "AI_GATEWAY_BASE_URL",
+    !key && "AI_GATEWAY_API_KEY",
+  ].filter(Boolean) as string[];
   return new AiConfigurationError(
     `AI gateway is not configured. Set ${missing.join(" and ")} to use AI_PROVIDER=gateway.`,
   );
@@ -162,8 +163,12 @@ function providerOnDefaults(id: ProviderId): ResolvedProvider | undefined {
   };
 }
 
-export function resolveProvider(preferred?: ProviderId | null): ResolvedProvider {
-  const requested = (preferred ?? env("AI_PROVIDER") ?? "").toLowerCase() as ProviderId | "";
+export function resolveProvider(
+  preferred?: ProviderId | null,
+): ResolvedProvider {
+  const requested = (preferred ?? env("AI_PROVIDER") ?? "").toLowerCase() as
+    | ProviderId
+    | "";
   const candidateList = candidates();
 
   // AI_PROVIDER is an instruction, not a hint: when it names a provider that is
@@ -226,7 +231,11 @@ export function resolveProvider(preferred?: ProviderId | null): ResolvedProvider
   };
 }
 
-export function providerStatus(): { configured: boolean; provider?: ProviderId; model?: string } {
+export function providerStatus(): {
+  configured: boolean;
+  provider?: ProviderId;
+  model?: string;
+} {
   try {
     const p = resolveProvider();
     return { configured: true, provider: p.id, model: p.chatModel };
@@ -294,7 +303,9 @@ async function readError(res: Response): Promise<string> {
 function isTransientProviderError(err: unknown): boolean {
   if (!(err instanceof AiServiceError)) return false;
   const s = err.status;
-  return s === 429 || s === 404 || s === 401 || s === 403 || s === 402 || s >= 500;
+  return (
+    s === 429 || s === 404 || s === 401 || s === 403 || s === 402 || s >= 500
+  );
 }
 
 /**
@@ -312,10 +323,15 @@ function chatModelAttempts(
   isPrimary: boolean,
   requested: string | undefined,
 ): string[] {
-  const first = isPrimary ? (requested ?? provider.chatModel) : provider.chatModel;
+  const first = isPrimary
+    ? (requested ?? provider.chatModel)
+    : provider.chatModel;
   // An explicitly chosen model is never silently swapped for another one.
   if (requested || env("AI_CHAT_MODEL")) return [first];
-  return [first, ...(FALLBACK_CHAT_MODELS[provider.id] ?? []).filter((m) => m !== first)];
+  return [
+    first,
+    ...(FALLBACK_CHAT_MODELS[provider.id] ?? []).filter((m) => m !== first),
+  ];
 }
 
 /**
@@ -383,7 +399,10 @@ async function callChat(
     const url = `${GEMINI_API}/models/${encodeURIComponent(model)}:generateContent`;
     const res = await fetch(url, {
       method: "POST",
-      headers: { "content-type": "application/json", "x-goog-api-key": provider.key },
+      headers: {
+        "content-type": "application/json",
+        "x-goog-api-key": provider.key,
+      },
       body: JSON.stringify({
         ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
         contents: options.messages
@@ -413,11 +432,16 @@ async function callChat(
     },
     body: JSON.stringify({
       model,
-      messages: [...(system ? [{ role: "system", content: system }] : []), ...options.messages],
+      messages: [
+        ...(system ? [{ role: "system", content: system }] : []),
+        ...options.messages,
+      ],
     }),
   });
   if (!res.ok) throw new AiServiceError(await readError(res), res.status);
-  const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+  const data = (await res.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
   return (data.choices?.[0]?.message?.content ?? "").trim();
 }
 
@@ -435,11 +459,17 @@ export async function chatComplete(options: {
 
   let lastError: unknown;
   for (const provider of chain) {
-    for (const model of chatModelAttempts(provider, provider.id === primary.id, options.model)) {
+    for (const model of chatModelAttempts(
+      provider,
+      provider.id === primary.id,
+      options.model,
+    )) {
       try {
         const text = await callChat(provider, model, options);
         if (text) return text;
-        lastError = new AiServiceError("The AI service returned an empty response.");
+        lastError = new AiServiceError(
+          "The AI service returned an empty response.",
+        );
       } catch (err) {
         lastError = err;
         if (!isTransientProviderError(err)) throw err;
@@ -466,7 +496,8 @@ export async function chatComplete(options: {
  */
 async function* sseEvents(res: Response): AsyncGenerator<string> {
   const body = res.body;
-  if (!body) throw new AiServiceError("The AI provider returned an empty stream.");
+  if (!body)
+    throw new AiServiceError("The AI provider returned an empty stream.");
   const reader = body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
@@ -499,7 +530,9 @@ function textFromGeminiChunk(json: string): string {
     const parsed = JSON.parse(json) as {
       candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
     };
-    return (parsed.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? "").join("");
+    return (parsed.candidates?.[0]?.content?.parts ?? [])
+      .map((p) => p.text ?? "")
+      .join("");
   } catch {
     return "";
   }
@@ -508,7 +541,10 @@ function textFromGeminiChunk(json: string): string {
 function textFromOpenAiChunk(json: string): string {
   try {
     const parsed = JSON.parse(json) as {
-      choices?: Array<{ delta?: { content?: string }; message?: { content?: string } }>;
+      choices?: Array<{
+        delta?: { content?: string };
+        message?: { content?: string };
+      }>;
     };
     const choice = parsed.choices?.[0];
     return choice?.delta?.content ?? choice?.message?.content ?? "";
@@ -563,7 +599,10 @@ async function openChatStream(
     const url = `${GEMINI_API}/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`;
     const res = await fetch(url, {
       method: "POST",
-      headers: { "content-type": "application/json", "x-goog-api-key": provider.key },
+      headers: {
+        "content-type": "application/json",
+        "x-goog-api-key": provider.key,
+      },
       body: JSON.stringify({
         ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
         contents: turns.map((m) => ({
@@ -579,11 +618,17 @@ async function openChatStream(
   // OpenAI-compatible (openai + gateway)
   const res = await fetch(`${provider.baseUrl}/chat/completions`, {
     method: "POST",
-    headers: { "content-type": "application/json", authorization: `Bearer ${provider.key}` },
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${provider.key}`,
+    },
     body: JSON.stringify({
       model,
       stream: true,
-      messages: [...(system ? [{ role: "system", content: system }] : []), ...turns],
+      messages: [
+        ...(system ? [{ role: "system", content: system }] : []),
+        ...turns,
+      ],
     }),
   });
   if (!res.ok) throw new AiServiceError(await readError(res), res.status);
@@ -618,7 +663,11 @@ export async function chatStream(options: {
 
   let lastError: unknown;
   for (const provider of chain) {
-    for (const model of chatModelAttempts(provider, provider.id === primary.id, options.model)) {
+    for (const model of chatModelAttempts(
+      provider,
+      provider.id === primary.id,
+      options.model,
+    )) {
       try {
         return await openChatStream(provider, model, options);
       } catch (err) {
@@ -653,7 +702,8 @@ export async function chatJson<T>(options: {
     .trim();
   const start = cleaned.indexOf("{");
   const end = cleaned.lastIndexOf("}");
-  if (start === -1 || end === -1) throw new AiServiceError("The AI response was not valid JSON.");
+  if (start === -1 || end === -1)
+    throw new AiServiceError("The AI response was not valid JSON.");
   return JSON.parse(cleaned.slice(start, end + 1)) as T;
 }
 
@@ -666,7 +716,10 @@ async function callImage(
   if (provider.id === "gateway") {
     const res = await fetch(`${provider.baseUrl}/chat/completions`, {
       method: "POST",
-      headers: { "content-type": "application/json", authorization: `Bearer ${provider.key}` },
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${provider.key}`,
+      },
       body: JSON.stringify({
         model: provider.imageModel,
         messages: [{ role: "user", content: prompt }],
@@ -675,24 +728,35 @@ async function callImage(
     });
     if (!res.ok) throw new AiServiceError(await readError(res), res.status);
     const data = (await res.json()) as {
-      choices?: Array<{ message?: { images?: Array<{ image_url?: { url?: string } }> } }>;
+      choices?: Array<{
+        message?: { images?: Array<{ image_url?: { url?: string } }> };
+      }>;
     };
     const url = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    if (!url) throw new AiServiceError("No image was returned by the provider.");
+    if (!url)
+      throw new AiServiceError("No image was returned by the provider.");
     return { dataUrl: url, model: provider.imageModel };
   }
 
   if (provider.id === "openai") {
     const res = await fetch(`${provider.baseUrl}/images/generations`, {
       method: "POST",
-      headers: { "content-type": "application/json", authorization: `Bearer ${provider.key}` },
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${provider.key}`,
+      },
       body: JSON.stringify({ model: provider.imageModel, prompt, n: 1 }),
     });
     if (!res.ok) throw new AiServiceError(await readError(res), res.status);
-    const data = (await res.json()) as { data?: Array<{ b64_json?: string; url?: string }> };
+    const data = (await res.json()) as {
+      data?: Array<{ b64_json?: string; url?: string }>;
+    };
     const first = data.data?.[0];
     if (first?.b64_json)
-      return { dataUrl: `data:image/png;base64,${first.b64_json}`, model: provider.imageModel };
+      return {
+        dataUrl: `data:image/png;base64,${first.b64_json}`,
+        model: provider.imageModel,
+      };
     if (first?.url) return { dataUrl: first.url, model: provider.imageModel };
     throw new AiServiceError("No image was returned.");
   }
@@ -703,7 +767,10 @@ async function callImage(
       `${GEMINI_API}/models/${encodeURIComponent(provider.imageModel)}:generateContent`,
       {
         method: "POST",
-        headers: { "content-type": "application/json", "x-goog-api-key": provider.key },
+        headers: {
+          "content-type": "application/json",
+          "x-goog-api-key": provider.key,
+        },
         body: JSON.stringify({
           contents: [{ role: "user", parts: [{ text: prompt }] }],
           generationConfig: { responseModalities: ["IMAGE"] },
@@ -713,12 +780,17 @@ async function callImage(
     if (!res.ok) throw new AiServiceError(await readError(res), res.status);
     const data = (await res.json()) as {
       candidates?: Array<{
-        content?: { parts?: Array<{ inlineData?: { data?: string; mimeType?: string } }> };
+        content?: {
+          parts?: Array<{ inlineData?: { data?: string; mimeType?: string } }>;
+        };
       }>;
     };
-    const part = (data.candidates?.[0]?.content?.parts ?? []).find((p) => p.inlineData?.data);
+    const part = (data.candidates?.[0]?.content?.parts ?? []).find(
+      (p) => p.inlineData?.data,
+    );
     const inline = part?.inlineData;
-    if (!inline?.data) throw new AiServiceError("No image was returned by the provider.");
+    if (!inline?.data)
+      throw new AiServiceError("No image was returned by the provider.");
     return {
       dataUrl: `data:${inline.mimeType ?? "image/png"};base64,${inline.data}`,
       model: provider.imageModel,
@@ -736,7 +808,8 @@ export async function generateImage(options: {
 }): Promise<{ dataUrl: string; model: string }> {
   const primary = resolveProvider();
   const prompt =
-    options.prompt + (options.aspectRatio ? `\n\nAspect ratio: ${options.aspectRatio}.` : "");
+    options.prompt +
+    (options.aspectRatio ? `\n\nAspect ratio: ${options.aspectRatio}.` : "");
   const chain = attemptChain(primary, false, "image").filter(
     (p) => p.id === primary.id || Boolean(p.imageModel),
   );
@@ -747,7 +820,11 @@ export async function generateImage(options: {
       return await callImage(provider, prompt);
     } catch (err) {
       lastError = err;
-      if (err instanceof AiConfigurationError && provider.id === primary.id && chain.length > 1) {
+      if (
+        err instanceof AiConfigurationError &&
+        provider.id === primary.id &&
+        chain.length > 1
+      ) {
         // The primary vendor has no image model here; another configured one may.
         continue;
       }
@@ -776,14 +853,24 @@ export async function transcribeAudio(options: {
       `${GEMINI_API}/models/${encodeURIComponent(provider.chatModel)}:generateContent`,
       {
         method: "POST",
-        headers: { "content-type": "application/json", "x-goog-api-key": provider.key },
+        headers: {
+          "content-type": "application/json",
+          "x-goog-api-key": provider.key,
+        },
         body: JSON.stringify({
           contents: [
             {
               role: "user",
               parts: [
-                { text: "Transcribe this audio exactly. Return only the transcript." },
-                { inline_data: { mime_type: options.mimeType, data: options.base64 } },
+                {
+                  text: "Transcribe this audio exactly. Return only the transcript.",
+                },
+                {
+                  inline_data: {
+                    mime_type: options.mimeType,
+                    data: options.base64,
+                  },
+                },
               ],
             },
           ],
@@ -826,7 +913,9 @@ export async function transcribeAudio(options: {
 }
 
 function decodeBase64(base64: string): ArrayBuffer {
-  const clean = base64.includes(",") ? base64.slice(base64.indexOf(",") + 1) : base64;
+  const clean = base64.includes(",")
+    ? base64.slice(base64.indexOf(",") + 1)
+    : base64;
   const binary = atob(clean);
   const buffer = new ArrayBuffer(binary.length);
   const out = new Uint8Array(buffer);
@@ -855,29 +944,40 @@ export async function createVideoJob(options: {
   }
 
   const model = options.model ?? provider.videoModel;
-  const res = await fetch(`${GEMINI_API}/models/${encodeURIComponent(model)}:predictLongRunning`, {
-    method: "POST",
-    headers: { "content-type": "application/json", "x-goog-api-key": provider.key },
-    body: JSON.stringify({
-      instances: [{ prompt: options.prompt }],
-      parameters: {
-        ...(options.aspectRatio ? { aspectRatio: options.aspectRatio } : {}),
-        sampleCount: 1,
+  const res = await fetch(
+    `${GEMINI_API}/models/${encodeURIComponent(model)}:predictLongRunning`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-goog-api-key": provider.key,
       },
-    }),
-  });
+      body: JSON.stringify({
+        instances: [{ prompt: options.prompt }],
+        parameters: {
+          ...(options.aspectRatio ? { aspectRatio: options.aspectRatio } : {}),
+          sampleCount: 1,
+        },
+      }),
+    },
+  );
   if (!res.ok) throw new AiServiceError(await readError(res), res.status);
   const data = (await res.json()) as { name?: string };
-  if (!data.name) throw new AiServiceError("The video provider did not return a job id.");
+  if (!data.name)
+    throw new AiServiceError("The video provider did not return a job id.");
   return { id: data.name };
 }
 
-export async function getVideoJob(
-  id: string,
-): Promise<{ status: string; url?: string | undefined; error?: string | undefined }> {
+export async function getVideoJob(id: string): Promise<{
+  status: string;
+  url?: string | undefined;
+  error?: string | undefined;
+}> {
   const provider = resolveProvider();
   if (provider.id !== "gemini" || !provider.videoModel) {
-    throw new AiConfigurationError("Video generation is not configured on this deployment.");
+    throw new AiConfigurationError(
+      "Video generation is not configured on this deployment.",
+    );
   }
   // Operation names look like "models/veo-.../operations/<id>".
   const path = id.startsWith("/") ? id.slice(1) : id;
@@ -896,7 +996,8 @@ export async function getVideoJob(
     };
   };
 
-  if (data.error?.message) return { status: "failed", error: data.error.message };
+  if (data.error?.message)
+    return { status: "failed", error: data.error.message };
   if (!data.done) return { status: "processing" };
 
   const generated = data.response?.generateVideoResponse;
@@ -909,7 +1010,10 @@ export async function getVideoJob(
         "The provider returned no video for this prompt.",
     };
   }
-  return { status: "completed", url: `/api/public/video-file?uri=${encodeURIComponent(uri)}` };
+  return {
+    status: "completed",
+    url: `/api/public/video-file?uri=${encodeURIComponent(uri)}`,
+  };
 }
 
 /** Server-side download of a provider video file. Used by the streaming route. */

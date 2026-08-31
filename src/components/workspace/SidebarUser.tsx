@@ -7,7 +7,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 function initials(user: User): string {
-  const name = (user.user_metadata?.["full_name"] as string | undefined) ?? user.email ?? "";
+  const name =
+    (user.user_metadata?.["full_name"] as string | undefined) ??
+    user.email ??
+    "";
   const parts = name
     .replace(/@.*/, "")
     .split(/[\s._-]+/)
@@ -32,7 +35,13 @@ function displayName(user: User): string {
  * the popup, which is the single place profile actions appear. Sign-out uses
  * the existing Supabase session, unchanged.
  */
-export function SidebarUser({ user, collapsed }: { user: User; collapsed: boolean }) {
+export function SidebarUser({
+  user,
+  collapsed,
+}: {
+  user: User;
+  collapsed: boolean;
+}) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -101,7 +110,11 @@ export function SidebarUser({ user, collapsed }: { user: User; collapsed: boolea
             {initials(user)}
           </span>
         )}
-        {collapsed ? null : <span className="truncate text-xs text-muted-foreground">Account</span>}
+        {collapsed ? null : (
+          <span className="truncate text-xs text-muted-foreground">
+            Account
+          </span>
+        )}
       </button>
 
       {open ? (
@@ -110,10 +123,15 @@ export function SidebarUser({ user, collapsed }: { user: User; collapsed: boolea
           className="absolute bottom-full left-0 z-50 mb-2 w-60 overflow-hidden rounded-xl border border-sidebar-border bg-popover shadow-[0_30px_70px_-30px_rgba(0,0,0,0.9)]"
         >
           <div className="border-b border-sidebar-border px-3 py-3">
-            <p className="truncate text-sm text-foreground" style={{ fontWeight: 600 }}>
+            <p
+              className="truncate text-sm text-foreground"
+              style={{ fontWeight: 600 }}
+            >
               {displayName(user)}
             </p>
-            <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+            <p className="truncate text-xs text-muted-foreground">
+              {user.email}
+            </p>
           </div>
           <Link
             to="/workspace/settings"

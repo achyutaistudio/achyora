@@ -14,7 +14,8 @@ export function paymentsStatus() {
 }
 
 export async function readSubscription(userId: string) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { supabaseAdmin } =
+    await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin
     .from("subscriptions")
     .select("plan, status, currency, current_period_end, provider")
@@ -52,27 +53,41 @@ export async function startCheckout(input: {
     amount: plan.amount[input.currency],
     currency: input.currency,
     receipt: `ach_${input.userId.slice(0, 8)}_${Date.now()}`,
-    notes: { user_id: input.userId, plan_id: plan.id, period_days: String(plan.periodDays ?? 0) },
+    notes: {
+      user_id: input.userId,
+      plan_id: plan.id,
+      period_days: String(plan.periodDays ?? 0),
+    },
   });
 
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { error: orderError } = await supabaseAdmin.from("payment_orders").insert({
-    user_id: input.userId,
-    provider: "razorpay",
-    provider_order_id: order.id,
-    plan_id: plan.id,
-    currency: order.currency,
-    amount: order.amount,
-    status: "created",
-  });
-  if (orderError) throw new Error(`Could not save payment order: ${orderError.message}`);
+  const { supabaseAdmin } =
+    await import("@/integrations/supabase/client.server");
+  const { error: orderError } = await supabaseAdmin
+    .from("payment_orders")
+    .insert({
+      user_id: input.userId,
+      provider: "razorpay",
+      provider_order_id: order.id,
+      plan_id: plan.id,
+      currency: order.currency,
+      amount: order.amount,
+      status: "created",
+    });
+  if (orderError)
+    throw new Error(`Could not save payment order: ${orderError.message}`);
 
   const { error: auditError } = await supabaseAdmin.from("audit_logs").insert({
     user_id: input.userId,
     event: "checkout_started",
     details: { plan: plan.id, currency: input.currency, order_id: order.id },
   });
-  if (auditError) console.error("[achyora] checkout audit failed", auditError.message);
+  if (auditError)
+    console.error("[achyora] checkout audit failed", auditError.message);
 
-  return { orderId: order.id, amount: order.amount, currency: order.currency, keyId: order.keyId };
+  return {
+    orderId: order.id,
+    amount: order.amount,
+    currency: order.currency,
+    keyId: order.keyId,
+  };
 }

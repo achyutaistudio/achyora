@@ -51,7 +51,11 @@ function configuredLimit(bucket: RateLimitBucket): Limit {
   return { limit: Number(match[1]), windowSeconds: Number(match[2]) };
 }
 
-export type RateLimitResult = { allowed: boolean; remaining: number; retryAfter: number };
+export type RateLimitResult = {
+  allowed: boolean;
+  remaining: number;
+  retryAfter: number;
+};
 
 /**
  * Consumes one unit from `bucket` for `subject`.
@@ -66,7 +70,8 @@ export async function consumeRateLimit(
 ): Promise<RateLimitResult> {
   const { limit, windowSeconds } = configuredLimit(bucket);
   try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } =
+      await import("@/integrations/supabase/client.server");
     const client = supabaseAdmin as unknown as {
       rpc: (
         fn: string,
@@ -84,14 +89,19 @@ export async function consumeRateLimit(
     });
     if (error) throw new Error(error.message);
     const row = (Array.isArray(data) ? data[0] : data) as
-      { allowed?: boolean; remaining?: number; retry_after?: number } | null | undefined;
+      | { allowed?: boolean; remaining?: number; retry_after?: number }
+      | null
+      | undefined;
     return {
       allowed: row?.allowed !== false,
       remaining: Number(row?.remaining ?? 0),
       retryAfter: Number(row?.retry_after ?? windowSeconds),
     };
   } catch (err) {
-    console.error("rate limit check failed", err instanceof Error ? err.message : err);
+    console.error(
+      "rate limit check failed",
+      err instanceof Error ? err.message : err,
+    );
     return { allowed: true, remaining: 0, retryAfter: 0 };
   }
 }

@@ -29,11 +29,15 @@ type AuditFallbackClient = {
           contains: (
             column: string,
             value: Record<string, unknown>,
-          ) => { limit: (n: number) => PromiseLike<{ data: unknown[] | null }> };
+          ) => {
+            limit: (n: number) => PromiseLike<{ data: unknown[] | null }>;
+          };
         };
       };
     };
-    insert: (values: Record<string, unknown>) => PromiseLike<{ error: unknown }>;
+    insert: (
+      values: Record<string, unknown>,
+    ) => PromiseLike<{ error: unknown }>;
   };
 };
 
@@ -70,9 +74,15 @@ export async function claimWebhookEvent(options: {
 
   const body = await res.text().catch(() => "");
   const tableMissing =
-    res.status === 404 || body.includes("PGRST205") || body.includes("does not exist");
+    res.status === 404 ||
+    body.includes("PGRST205") ||
+    body.includes("does not exist");
   if (!tableMissing) {
-    console.error("[achyora] webhook idempotency claim failed", res.status, body.slice(0, 200));
+    console.error(
+      "[achyora] webhook idempotency claim failed",
+      res.status,
+      body.slice(0, 200),
+    );
     return "error";
   }
 
@@ -99,8 +109,10 @@ async function claimViaAuditLog(
     .limit(1);
   if (data && data.length > 0) return "duplicate";
 
-  await client
-    .from("audit_logs")
-    .insert({ user_id: userId, event: "webhook_received", details: { event_id: eventId, event } });
+  await client.from("audit_logs").insert({
+    user_id: userId,
+    event: "webhook_received",
+    details: { event_id: eventId, event },
+  });
   return "claimed";
 }

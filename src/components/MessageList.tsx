@@ -3,7 +3,11 @@ import { useState } from "react";
 
 import { cn } from "@/lib/utils";
 
-export type UiMessage = { id: string; role: "user" | "assistant"; content: string };
+export type UiMessage = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+};
 
 export function MessageList({
   messages,
@@ -17,7 +21,11 @@ export function MessageList({
   className?: string | undefined;
 }) {
   return (
-    <div className={cn("flex flex-col gap-6", className)} role="log" aria-live="polite">
+    <div
+      className={cn("flex flex-col gap-6", className)}
+      role="log"
+      aria-live="polite"
+    >
       {messages.map((m) => (
         <MessageRow key={m.id} message={m} {...(onRetry ? { onRetry } : {})} />
       ))}
@@ -26,7 +34,13 @@ export function MessageList({
   );
 }
 
-function MessageRow({ message, onRetry }: { message: UiMessage; onRetry?: () => void }) {
+function MessageRow({
+  message,
+  onRetry,
+}: {
+  message: UiMessage;
+  onRetry?: () => void;
+}) {
   const [copied, setCopied] = useState(false);
   const isUser = message.role === "user";
 
@@ -41,8 +55,15 @@ function MessageRow({ message, onRetry }: { message: UiMessage; onRetry?: () => 
   }
 
   return (
-    <div className={cn("flex w-full", isUser ? "justify-end" : "justify-start")}>
-      <div className={cn("max-w-[min(46rem,100%)]", isUser && "max-w-[min(34rem,100%)]")}>
+    <div
+      className={cn("flex w-full", isUser ? "justify-end" : "justify-start")}
+    >
+      <div
+        className={cn(
+          "max-w-[min(46rem,100%)]",
+          isUser && "max-w-[min(34rem,100%)]",
+        )}
+      >
         {!isUser ? (
           <p className="mb-1.5 text-[0.62rem] uppercase tracking-[0.2em] text-muted-foreground">
             ACHYORA
@@ -65,7 +86,11 @@ function MessageRow({ message, onRetry }: { message: UiMessage; onRetry?: () => 
               onClick={copy}
               className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
             >
-              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? (
+                <Check className="h-3.5 w-3.5" />
+              ) : (
+                <Copy className="h-3.5 w-3.5" />
+              )}
               {copied ? "Copied" : "Copy"}
             </button>
             {onRetry ? (
@@ -92,7 +117,9 @@ export function TypingIndicator() {
         <span
           key={i}
           className="h-1.5 w-1.5 rounded-full bg-primary"
-          style={{ animation: `ach-breathe 1.4s ease-in-out ${i * 0.18}s infinite` }}
+          style={{
+            animation: `ach-breathe 1.4s ease-in-out ${i * 0.18}s infinite`,
+          }}
         />
       ))}
     </div>

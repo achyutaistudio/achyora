@@ -37,7 +37,8 @@ export const Route = createFileRoute("/responsible-ai")({
       { property: "og:title", content: "Responsible AI — ACHYORA" },
       {
         property: "og:description",
-        content: "ACHYORA's commitments on honesty, privacy and cultural responsibility.",
+        content:
+          "ACHYORA's commitments on honesty, privacy and cultural responsibility.",
       },
     ],
   }),
@@ -49,13 +50,19 @@ function ResponsibleAI() {
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <main className="mx-auto w-full max-w-3xl px-4 py-16 sm:px-6 sm:py-20">
-        <h1 className="text-3xl text-foreground sm:text-4xl" style={{ fontWeight: 800 }}>
+        <h1
+          className="text-3xl text-foreground sm:text-4xl"
+          style={{ fontWeight: 800 }}
+        >
           Responsible AI
         </h1>
         <div className="mt-10 space-y-8">
           {SECTIONS.map((s) => (
             <section key={s.t}>
-              <h2 className="text-lg text-foreground" style={{ fontWeight: 600 }}>
+              <h2
+                className="text-lg text-foreground"
+                style={{ fontWeight: 600 }}
+              >
                 {s.t}
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">{s.d}</p>

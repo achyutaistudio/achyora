@@ -58,13 +58,24 @@ function Home() {
             </p>
           </div>
 
-          <div className="ach-rise mx-auto mt-9 max-w-2xl text-left" style={{ animationDelay: "120ms" }}>
+          <div
+            className="ach-rise mx-auto mt-9 max-w-2xl text-left"
+            style={{ animationDelay: "120ms" }}
+          >
             <GuestChat />
           </div>
 
-          <div className="ach-rise mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-white/50" style={{ animationDelay: "180ms" }}>
-            <span className="inline-flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5" /> Chat, research, create</span>
-            <Link to="/sanatan" className="inline-flex items-center gap-1.5 transition-colors hover:text-white">
+          <div
+            className="ach-rise mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-white/50"
+            style={{ animationDelay: "180ms" }}
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5" /> Chat, research, create
+            </span>
+            <Link
+              to="/sanatan"
+              className="inline-flex items-center gap-1.5 transition-colors hover:text-white"
+            >
               Explore Sanatan <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>

@@ -31,7 +31,10 @@ export const Route = createFileRoute("/workspace/chat")({
   // `prompt` lets another surface (e.g. Sanatan) hand a question over to the
   // existing chat experience without any second chat system.
   validateSearch: (search: Record<string, unknown>): { prompt?: string } => {
-    const prompt = typeof search["prompt"] === "string" ? search["prompt"].slice(0, 2000) : "";
+    const prompt =
+      typeof search["prompt"] === "string"
+        ? search["prompt"].slice(0, 2000)
+        : "";
     return prompt ? { prompt } : {};
   },
   head: () => ({
@@ -39,12 +42,14 @@ export const Route = createFileRoute("/workspace/chat")({
       { title: "Chat — ACHYORA Workspace" },
       {
         name: "description",
-        content: "Chat with ACHYORA across every AI model configured on this deployment.",
+        content:
+          "Chat with ACHYORA across every AI model configured on this deployment.",
       },
       { property: "og:title", content: "Chat — ACHYORA Workspace" },
       {
         property: "og:description",
-        content: "Saved conversations, model choice and real side-by-side comparison.",
+        content:
+          "Saved conversations, model choice and real side-by-side comparison.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -63,7 +68,9 @@ function ChatSurface() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<UiMessage[]>([]);
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<{ code?: string; message: string } | null>(null);
+  const [error, setError] = useState<{ code?: string; message: string } | null>(
+    null,
+  );
   const [modelId, setModelId] = useState<string>("");
   const [compareMode, setCompareMode] = useState(false);
   // Incremented on "stop": any in-flight reply that resolves afterwards is discarded.
@@ -76,7 +83,10 @@ function ChatSurface() {
     error?: string;
   }> | null>(null);
 
-  const catalog = useQuery({ queryKey: ["ai-catalog"], queryFn: () => catalogFn() });
+  const catalog = useQuery({
+    queryKey: ["ai-catalog"],
+    queryFn: () => catalogFn(),
+  });
 
   useEffect(() => {
     const onNewChat = () => {
@@ -109,7 +119,8 @@ function ChatSurface() {
 
   const models = catalog.data?.models ?? [];
   useEffect(() => {
-    if (!modelId && catalog.data?.defaultModel) setModelId(catalog.data.defaultModel);
+    if (!modelId && catalog.data?.defaultModel)
+      setModelId(catalog.data.defaultModel);
   }, [catalog.data, modelId]);
 
   const history = useMemo(
@@ -163,14 +174,20 @@ function ChatSurface() {
 
     let conversationId = activeId;
     if (!conversationId) {
-      const conv = await createFn({ data: { surface: "chat", title: value.slice(0, 60) } });
+      const conv = await createFn({
+        data: { surface: "chat", title: value.slice(0, 60) },
+      });
       conversationId = (conv as { id: string }).id;
       setActiveId(conversationId);
       await qc.invalidateQueries({ queryKey: ["conversations"] });
       requestHistoryRefresh();
     }
 
-    const userMessage: UiMessage = { id: `local-${Date.now()}`, role: "user", content: value };
+    const userMessage: UiMessage = {
+      id: `local-${Date.now()}`,
+      role: "user",
+      content: value,
+    };
     if (!options?.keepUser) setMessages((prev) => [...prev, userMessage]);
     setPending(true);
     track("message_sent");
@@ -206,18 +223,24 @@ function ChatSurface() {
           if (!started) {
             started = true;
             setPending(false);
-            setMessages((prev) => [...prev, { id: replyId, role: "assistant", content: text }]);
+            setMessages((prev) => [
+              ...prev,
+              { id: replyId, role: "assistant", content: text },
+            ]);
             return;
           }
           setMessages((prev) =>
-            prev.map((m) => (m.id === replyId ? { ...m, content: m.content + text } : m)),
+            prev.map((m) =>
+              m.id === replyId ? { ...m, content: m.content + text } : m,
+            ),
           );
         },
         onError: (failure) => {
           failed = true;
           if (run !== runRef.current) return;
           setError({ code: failure.code, message: failure.message });
-          if (!started) setMessages((prev) => prev.filter((m) => m.id !== userMessage.id));
+          if (!started)
+            setMessages((prev) => prev.filter((m) => m.id !== userMessage.id));
         },
       });
 
@@ -226,7 +249,9 @@ function ChatSurface() {
       await qc.invalidateQueries({ queryKey: ["account"] });
     } catch {
       if (run !== runRef.current) return;
-      setError({ message: "The request could not be completed. Please try again." });
+      setError({
+        message: "The request could not be completed. Please try again.",
+      });
       setMessages((prev) => prev.filter((m) => m.id !== userMessage.id));
     } finally {
       if (run === runRef.current) setPending(false);
@@ -242,7 +267,9 @@ function ChatSurface() {
     setPending(true);
     setComparison(null);
     try {
-      const result = await compareFn({ data: { prompt: promptText, modelIds: ids } });
+      const result = await compareFn({
+        data: { prompt: promptText, modelIds: ids },
+      });
       if (!result.ok) {
         setError({ code: result.code, message: result.message });
         return;
@@ -279,7 +306,9 @@ function ChatSurface() {
               onChange={(e) => setModelId(e.target.value)}
               className="appearance-none rounded-full border border-border/70 bg-secondary/55 py-1.5 pl-3 pr-8 text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
-              {models.length === 0 ? <option value="">No model configured</option> : null}
+              {models.length === 0 ? (
+                <option value="">No model configured</option>
+              ) : null}
               {models.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.label}
@@ -313,7 +342,9 @@ function ChatSurface() {
                     key={m.id}
                     onClick={() =>
                       setCompareWith((prev) =>
-                        on ? prev.filter((x) => x !== m.id) : [...prev, m.id].slice(0, 2),
+                        on
+                          ? prev.filter((x) => x !== m.id)
+                          : [...prev, m.id].slice(0, 2),
                       )
                     }
                     className={`rounded-full border px-3 py-1 text-xs transition-colors ${
@@ -331,13 +362,19 @@ function ChatSurface() {
 
         <div className="flex min-h-[48vh] flex-1 flex-col justify-center py-8">
           {error ? (
-            <ErrorState {...(error.code ? { code: error.code } : {})} message={error.message} />
+            <ErrorState
+              {...(error.code ? { code: error.code } : {})}
+              message={error.message}
+            />
           ) : null}
 
           {comparison ? (
             <div className="grid gap-3 md:grid-cols-2">
               {comparison.map((r) => (
-                <div key={r.modelId} className="rounded-2xl border border-border bg-card p-4">
+                <div
+                  key={r.modelId}
+                  className="rounded-2xl border border-border bg-card p-4"
+                >
                   <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                     {r.modelId}
                   </p>
@@ -356,7 +393,8 @@ function ChatSurface() {
                 What can I help you make sense of?
               </h1>
               <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
-                Ask naturally. ACHYORA will use the real model configured for this workspace.
+                Ask naturally. ACHYORA will use the real model configured for
+                this workspace.
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-2">
                 {starters.map((starter) => (
@@ -380,7 +418,10 @@ function ChatSurface() {
           )}
 
           {pending && comparison === null && compareMode ? (
-            <LoadingState label="Running every selected model…" className="mt-4" />
+            <LoadingState
+              label="Running every selected model…"
+              className="mt-4"
+            />
           ) : null}
         </div>
 
@@ -391,14 +432,31 @@ function ChatSurface() {
             busy={pending}
             disabled={models.length === 0}
             {...(prompt ? { initialValue: prompt } : {})}
-            placeholder={compareMode ? "Prompt every selected model…" : "Ask ACHYORA anything…"}
-            hint={compareMode ? "Comparison costs 1 credit per model." : "1 credit per message."}
+            placeholder={
+              compareMode
+                ? "Prompt every selected model…"
+                : "Ask ACHYORA anything…"
+            }
+            hint={
+              compareMode
+                ? "Comparison costs 1 credit per model."
+                : "1 credit per message."
+            }
           />
-          <nav className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground" aria-label="Quick tools">
-            <a href="/workspace/library" className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-colors hover:bg-secondary hover:text-foreground">
+          <nav
+            className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground"
+            aria-label="Quick tools"
+          >
+            <a
+              href="/workspace/library"
+              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-colors hover:bg-secondary hover:text-foreground"
+            >
               <Paperclip className="h-3.5 w-3.5" /> Library
             </a>
-            <a href="/workspace/voice" className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-colors hover:bg-secondary hover:text-foreground">
+            <a
+              href="/workspace/voice"
+              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-colors hover:bg-secondary hover:text-foreground"
+            >
               <Mic className="h-3.5 w-3.5" /> Voice
             </a>
           </nav>

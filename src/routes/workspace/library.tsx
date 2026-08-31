@@ -20,7 +20,8 @@ export const Route = createFileRoute("/workspace/library")({
       { title: "Library — ACHYORA Workspace" },
       {
         name: "description",
-        content: "Your private ACHYORA library: files stored under your own account only.",
+        content:
+          "Your private ACHYORA library: files stored under your own account only.",
       },
       { property: "og:title", content: "Library — ACHYORA Workspace" },
       {
@@ -57,7 +58,9 @@ function LibrarySurface() {
     setBusy(true);
     try {
       // The server owns the path, the size limit and the type policy.
-      const target = await prepare({ data: { fileName: file.name, size: file.size } });
+      const target = await prepare({
+        data: { fileName: file.name, size: file.size },
+      });
       if (!target.ok) {
         setError(target.message);
         return;
@@ -65,12 +68,16 @@ function LibrarySurface() {
 
       const { error: uploadError } = await supabase.storage
         .from("library")
-        .upload(target.storagePath, file, { contentType: file.type || "application/octet-stream" });
+        .upload(target.storagePath, file, {
+          contentType: file.type || "application/octet-stream",
+        });
       if (uploadError) throw new Error(uploadError.message);
 
       // Registration re-reads the object's real metadata server-side and
       // deletes it again if it violates policy.
-      const saved = await register({ data: { storagePath: target.storagePath } });
+      const saved = await register({
+        data: { storagePath: target.storagePath },
+      });
       if (!saved.ok) {
         setError(saved.message);
         return;
@@ -124,8 +131,12 @@ function LibrarySurface() {
 
       <div className="mt-8">
         {error ? <ErrorState message={error} /> : null}
-        {files.isPending ? <LoadingState label="Loading your library…" /> : null}
-        {files.isError ? <ErrorState message="Your library could not be loaded." /> : null}
+        {files.isPending ? (
+          <LoadingState label="Loading your library…" />
+        ) : null}
+        {files.isError ? (
+          <ErrorState message="Your library could not be loaded." />
+        ) : null}
         {files.data && files.data.length === 0 ? (
           <EmptyState
             title="Nothing stored yet"
@@ -139,13 +150,18 @@ function LibrarySurface() {
               className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3"
             >
               <span className="min-w-0">
-                <span className="block truncate text-sm text-foreground">{f.file_name}</span>
+                <span className="block truncate text-sm text-foreground">
+                  {f.file_name}
+                </span>
                 <span className="block text-xs text-muted-foreground">
                   {f.kind} · {formatSize(Number(f.size_bytes))}
                 </span>
               </span>
               <span className="flex shrink-0 gap-3 text-sm">
-                <button onClick={() => void openItem(f.id)} className="text-foreground underline">
+                <button
+                  onClick={() => void openItem(f.id)}
+                  className="text-foreground underline"
+                >
                   Open
                 </button>
                 <button

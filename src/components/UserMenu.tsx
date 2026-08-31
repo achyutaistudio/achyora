@@ -6,7 +6,10 @@ import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 function initials(user: User): string {
-  const name = (user.user_metadata?.["full_name"] as string | undefined) ?? user.email ?? "";
+  const name =
+    (user.user_metadata?.["full_name"] as string | undefined) ??
+    user.email ??
+    "";
   const parts = name
     .replace(/@.*/, "")
     .split(/[\s._-]+/)
@@ -90,7 +93,9 @@ export function UserMenu({ user }: { user: User }) {
             {initials(user)}
           </span>
         )}
-        <span className="hidden max-w-[10rem] truncate md:inline">{displayName(user)}</span>
+        <span className="hidden max-w-[10rem] truncate md:inline">
+          {displayName(user)}
+        </span>
       </button>
 
       {open ? (
@@ -99,10 +104,15 @@ export function UserMenu({ user }: { user: User }) {
           className="absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-xl border border-border bg-background shadow-lg"
         >
           <div className="border-b border-border px-3 py-3">
-            <p className="truncate text-sm text-foreground" style={{ fontWeight: 600 }}>
+            <p
+              className="truncate text-sm text-foreground"
+              style={{ fontWeight: 600 }}
+            >
               {displayName(user)}
             </p>
-            <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+            <p className="truncate text-xs text-muted-foreground">
+              {user.email}
+            </p>
           </div>
           <Link
             to="/workspace"

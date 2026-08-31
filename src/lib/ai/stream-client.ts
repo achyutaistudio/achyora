@@ -14,7 +14,10 @@ type Event =
   | ({ type: "done" } & Record<string, unknown>)
   | { type: "error"; code?: string; message?: string };
 
-export async function readChatStream(res: Response, handlers: ChatStreamHandlers): Promise<void> {
+export async function readChatStream(
+  res: Response,
+  handlers: ChatStreamHandlers,
+): Promise<void> {
   const contentType = res.headers.get("content-type") ?? "";
 
   // Pre-stream failures (quota, rate limit, configuration) stay plain JSON.
@@ -27,14 +30,19 @@ export async function readChatStream(res: Response, handlers: ChatStreamHandlers
     }
     handlers.onError({
       code: payload.code ?? "UNKNOWN",
-      message: payload.message ?? "The request could not be completed. Please try again.",
+      message:
+        payload.message ??
+        "The request could not be completed. Please try again.",
     });
     return;
   }
 
   const body = res.body;
   if (!body) {
-    handlers.onError({ code: "UNKNOWN", message: "The connection dropped. Please try again." });
+    handlers.onError({
+      code: "UNKNOWN",
+      message: "The connection dropped. Please try again.",
+    });
     return;
   }
 
@@ -56,7 +64,8 @@ export async function readChatStream(res: Response, handlers: ChatStreamHandlers
       failed = true;
       handlers.onError({
         code: event.code ?? "AI_SERVICE_ERROR",
-        message: event.message ?? "The AI service could not complete this request.",
+        message:
+          event.message ?? "The AI service could not complete this request.",
       });
     } else if (event.type === "done") {
       const { type: _type, ...meta } = event;

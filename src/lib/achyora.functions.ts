@@ -38,7 +38,11 @@ export type ChatTurn = { role: "user" | "assistant"; content: string };
 export type ResearchBrief = {
   summary: string;
   key_findings: string[];
-  evidence: Array<{ claim: string; basis: string; confidence: "high" | "medium" | "low" }>;
+  evidence: Array<{
+    claim: string;
+    basis: string;
+    confidence: "high" | "medium" | "low";
+  }>;
   open_questions: string[];
   sources: Array<{ title: string; reference: string; note?: string }>;
   confidence: "high" | "medium" | "low";
@@ -50,20 +54,25 @@ export type SanatanBrief = ResearchBrief & {
 
 /* ------------------------------------------------------------------ status */
 
-export const getAiStatus = createServerFn({ method: "GET" }).handler(async () => providerStatus());
+export const getAiStatus = createServerFn({ method: "GET" }).handler(async () =>
+  providerStatus(),
+);
 
 /**
  * The models the UI is allowed to offer: the catalog filtered down to the
  * providers that actually have credentials here. Never advertises a model
  * this deployment cannot really call.
  */
-export const getAiCatalog = createServerFn({ method: "GET" }).handler(async () => {
-  const available = configuredProviders();
-  const models = MODEL_CATALOG.filter((m) => available.includes(m.provider));
-  const fallback = defaultProvider();
-  const defaultModel = models.find((m) => m.provider === fallback)?.id ?? models[0]?.id ?? null;
-  return { providers: available, models, defaultModel };
-});
+export const getAiCatalog = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const available = configuredProviders();
+    const models = MODEL_CATALOG.filter((m) => available.includes(m.provider));
+    const fallback = defaultProvider();
+    const defaultModel =
+      models.find((m) => m.provider === fallback)?.id ?? models[0]?.id ?? null;
+    return { providers: available, models, defaultModel };
+  },
+);
 
 export const getAccount = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -71,12 +80,24 @@ export const getAccount = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const [profile, credits, subscription] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
-      supabase.from("user_credits").select("*").eq("user_id", userId).maybeSingle(),
-      supabase.from("subscriptions").select("*").eq("user_id", userId).maybeSingle(),
+      supabase
+        .from("user_credits")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle(),
+      supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle(),
     ]);
     return {
       profile: profile.data,
-      credits: credits.data ?? { balance: 0, daily_allowance: 10, resets_at: null },
+      credits: credits.data ?? {
+        balance: 0,
+        daily_allowance: 10,
+        resets_at: null,
+      },
       subscription: subscription.data ?? { plan: "free", status: "inactive" },
     };
   });
@@ -118,7 +139,11 @@ export const getConversation = createServerFn({ method: "GET" })
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
     const [conv, msgs] = await Promise.all([
-      context.supabase.from("conversations").select("*").eq("id", data.id).maybeSingle(),
+      context.supabase
+        .from("conversations")
+        .select("*")
+        .eq("id", data.id)
+        .maybeSingle(),
       context.supabase
         .from("messages")
         .select("id, role, content, created_at")
@@ -144,7 +169,10 @@ export const deleteConversation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("conversations").delete().eq("id", data.id);
+    const { error } = await context.supabase
+      .from("conversations")
+      .delete()
+      .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });
@@ -152,21 +180,31 @@ export const deleteConversation = createServerFn({ method: "POST" })
 export const sendChatMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (input: { conversationId: string; content: string; history?: ChatTurn[]; modelId?: string }) =>
-      input,
+    (input: {
+      conversationId: string;
+      content: string;
+      history?: ChatTurn[];
+      modelId?: string;
+    }) => input,
   )
   .handler(
     async ({
       data,
       context,
-    }): Promise<AchyoraResult<{ message: string; balance: number; title?: string }>> => {
+    }): Promise<
+      AchyoraResult<{ message: string; balance: number; title?: string }>
+    > => {
       const content = (data.content ?? "").trim().slice(0, 8000);
       if (!content) return fail("INVALID_INPUT", "Write a message first.");
 
       const limit = await consumeRateLimit("chat", context.userId);
       if (!limit.allowed) return fail("RATE_LIMITED");
 
-      const spent = await spend(context.userId, CREDIT_COSTS.chat, "chat_message");
+      const spent = await spend(
+        context.userId,
+        CREDIT_COSTS.chat,
+        "chat_message",
+      );
       if (!spent.ok) return fail("INSUFFICIENT_CREDITS");
 
       try {
@@ -180,17 +218,26 @@ export const sendChatMessage = createServerFn({ method: "POST" })
         });
         if (!text) throw new Error("empty response");
 
-        const { error: messageError } = await context.supabase.from("messages").insert([
-          { conversation_id: data.conversationId, user_id: context.userId, role: "user", content },
-          {
-            conversation_id: data.conversationId,
-            user_id: context.userId,
-            role: "assistant",
-            content: text,
-          },
-        ]);
+        const { error: messageError } = await context.supabase
+          .from("messages")
+          .insert([
+            {
+              conversation_id: data.conversationId,
+              user_id: context.userId,
+              role: "user",
+              content,
+            },
+            {
+              conversation_id: data.conversationId,
+              user_id: context.userId,
+              role: "assistant",
+              content: text,
+            },
+          ]);
         if (messageError)
-          throw new Error(`Could not save the conversation: ${messageError.message}`);
+          throw new Error(
+            `Could not save the conversation: ${messageError.message}`,
+          );
 
         let title: string | undefined;
         if (history.length === 0) {
@@ -200,20 +247,33 @@ export const sendChatMessage = createServerFn({ method: "POST" })
             .update({ title })
             .eq("id", data.conversationId);
           if (titleError)
-            throw new Error(`Could not update the conversation title: ${titleError.message}`);
+            throw new Error(
+              `Could not update the conversation title: ${titleError.message}`,
+            );
         } else {
           const { error: conversationError } = await context.supabase
             .from("conversations")
             .update({ updated_at: new Date().toISOString() })
             .eq("id", data.conversationId);
           if (conversationError)
-            throw new Error(`Could not update the conversation: ${conversationError.message}`);
+            throw new Error(
+              `Could not update the conversation: ${conversationError.message}`,
+            );
         }
 
-        return { ok: true, message: text, balance: spent.balance, ...(title ? { title } : {}) };
+        return {
+          ok: true,
+          message: text,
+          balance: spent.balance,
+          ...(title ? { title } : {}),
+        };
       } catch (err) {
         try {
-          await refund(context.userId, CREDIT_COSTS.chat, "chat_message_refund");
+          await refund(
+            context.userId,
+            CREDIT_COSTS.chat,
+            "chat_message_refund",
+          );
         } catch (refundErr) {
           console.error("[achyora] chat refund failed", refundErr);
         }
@@ -248,7 +308,8 @@ export const compareModels = createServerFn({ method: "POST" })
       const prompt = (data.prompt ?? "").trim().slice(0, 4000);
       const modelIds = (data.modelIds ?? []).slice(0, 3);
       if (!prompt) return fail("INVALID_INPUT", "Write a prompt to compare.");
-      if (modelIds.length < 2) return fail("INVALID_INPUT", "Pick at least two models to compare.");
+      if (modelIds.length < 2)
+        return fail("INVALID_INPUT", "Pick at least two models to compare.");
 
       const compareLimit = await consumeRateLimit("compare", context.userId);
       if (!compareLimit.allowed) return fail("RATE_LIMITED");
@@ -271,11 +332,17 @@ export const compareModels = createServerFn({ method: "POST" })
               provider: routed.provider,
               ...(routed.model ? { model: routed.model } : {}),
             });
-            if (!message) throw new Error("The model returned an empty response.");
+            if (!message)
+              throw new Error("The model returned an empty response.");
             return { modelId, ok: true as const, message };
           } catch (err) {
             const failure = toFailure(err);
-            return { modelId, ok: false as const, error: failure.message, code: failure.code };
+            return {
+              modelId,
+              ok: false as const,
+              error: failure.message,
+              code: failure.code,
+            };
           }
         }),
       );
@@ -296,7 +363,10 @@ export const compareModels = createServerFn({ method: "POST" })
       return {
         ok: true,
         results,
-        balance: Math.max(spent.balance + failed * CREDIT_COSTS.comparePerModel, 0),
+        balance: Math.max(
+          spent.balance + failed * CREDIT_COSTS.comparePerModel,
+          0,
+        ),
       };
     },
   );
@@ -317,7 +387,11 @@ export const runResearch = createServerFn({ method: "POST" })
       const researchLimit = await consumeRateLimit("research", context.userId);
       if (!researchLimit.allowed) return fail("RATE_LIMITED");
 
-      const spent = await spend(context.userId, CREDIT_COSTS.research, "research");
+      const spent = await spend(
+        context.userId,
+        CREDIT_COSTS.research,
+        "research",
+      );
       if (!spent.ok) return fail("INSUFFICIENT_CREDITS");
 
       try {
@@ -327,12 +401,22 @@ export const runResearch = createServerFn({ method: "POST" })
         });
         const { error: researchError } = await context.supabase
           .from("research_records")
-          .insert({ user_id: context.userId, mode: "general", query, result: brief });
-        if (researchError) throw new Error(`Could not save research: ${researchError.message}`);
+          .insert({
+            user_id: context.userId,
+            mode: "general",
+            query,
+            result: brief,
+          });
+        if (researchError)
+          throw new Error(`Could not save research: ${researchError.message}`);
         return { ok: true, brief, balance: spent.balance };
       } catch (err) {
         try {
-          await refund(context.userId, CREDIT_COSTS.research, "research_refund");
+          await refund(
+            context.userId,
+            CREDIT_COSTS.research,
+            "research_refund",
+          );
         } catch (refundErr) {
           console.error("[achyora] research refund failed", refundErr);
         }
@@ -345,14 +429,21 @@ export const runSanatanResearch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { query: string }) => input)
   .handler(
-    async ({ data, context }): Promise<AchyoraResult<{ brief: SanatanBrief; balance: number }>> => {
+    async ({
+      data,
+      context,
+    }): Promise<AchyoraResult<{ brief: SanatanBrief; balance: number }>> => {
       const query = (data.query ?? "").trim().slice(0, 2000);
       if (!query) return fail("INVALID_INPUT", "Enter a question to research.");
 
       const sanatanLimit = await consumeRateLimit("research", context.userId);
       if (!sanatanLimit.allowed) return fail("RATE_LIMITED");
 
-      const spent = await spend(context.userId, CREDIT_COSTS.sanatanResearch, "sanatan_research");
+      const spent = await spend(
+        context.userId,
+        CREDIT_COSTS.sanatanResearch,
+        "sanatan_research",
+      );
       if (!spent.ok) return fail("INSUFFICIENT_CREDITS");
 
       try {
@@ -362,12 +453,22 @@ export const runSanatanResearch = createServerFn({ method: "POST" })
         });
         const { error: researchError } = await context.supabase
           .from("research_records")
-          .insert({ user_id: context.userId, mode: "sanatan", query, result: brief });
-        if (researchError) throw new Error(`Could not save research: ${researchError.message}`);
+          .insert({
+            user_id: context.userId,
+            mode: "sanatan",
+            query,
+            result: brief,
+          });
+        if (researchError)
+          throw new Error(`Could not save research: ${researchError.message}`);
         return { ok: true, brief, balance: spent.balance };
       } catch (err) {
         try {
-          await refund(context.userId, CREDIT_COSTS.sanatanResearch, "sanatan_research_refund");
+          await refund(
+            context.userId,
+            CREDIT_COSTS.sanatanResearch,
+            "sanatan_research_refund",
+          );
         } catch (refundErr) {
           console.error("[achyora] sanatan refund failed", refundErr);
         }
@@ -380,43 +481,68 @@ export const runSanatanResearch = createServerFn({ method: "POST" })
 
 export const generateImageFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { prompt: string; aspectRatio?: string; style?: string }) => input)
-  .handler(async ({ data, context }): Promise<AchyoraResult<{ url: string; balance: number }>> => {
-    const prompt = (data.prompt ?? "").trim().slice(0, 2000);
-    if (!prompt) return fail("INVALID_INPUT", "Describe the image you want.");
+  .inputValidator(
+    (input: { prompt: string; aspectRatio?: string; style?: string }) => input,
+  )
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<AchyoraResult<{ url: string; balance: number }>> => {
+      const prompt = (data.prompt ?? "").trim().slice(0, 2000);
+      if (!prompt) return fail("INVALID_INPUT", "Describe the image you want.");
 
-    const imageLimit = await consumeRateLimit("image", context.userId);
-    if (!imageLimit.allowed) return fail("RATE_LIMITED");
+      const imageLimit = await consumeRateLimit("image", context.userId);
+      if (!imageLimit.allowed) return fail("RATE_LIMITED");
 
-    const spent = await spend(context.userId, CREDIT_COSTS.image, "image_generation");
-    if (!spent.ok) return fail("INSUFFICIENT_CREDITS");
+      const spent = await spend(
+        context.userId,
+        CREDIT_COSTS.image,
+        "image_generation",
+      );
+      if (!spent.ok) return fail("INSUFFICIENT_CREDITS");
 
-    try {
-      const composed =
-        data.style && data.style !== "none" ? `${prompt}\n\nStyle: ${data.style}.` : prompt;
-      const image = await generateImage({
-        prompt: composed,
-        ...(data.aspectRatio ? { aspectRatio: data.aspectRatio } : {}),
-      });
-      const { error: mediaError } = await context.supabase.from("generated_media").insert({
-        user_id: context.userId,
-        media_type: "image",
-        prompt,
-        status: "completed",
-        settings: { aspectRatio: data.aspectRatio ?? "1:1", style: data.style ?? "none" },
-      });
-      if (mediaError) throw new Error(`Could not save generated image: ${mediaError.message}`);
-      await audit(context.userId, "image_generated");
-      return { ok: true, url: image.dataUrl, balance: spent.balance };
-    } catch (err) {
       try {
-        await refund(context.userId, CREDIT_COSTS.image, "image_generation_refund");
-      } catch (refundErr) {
-        console.error("[achyora] image refund failed", refundErr);
+        const composed =
+          data.style && data.style !== "none"
+            ? `${prompt}\n\nStyle: ${data.style}.`
+            : prompt;
+        const image = await generateImage({
+          prompt: composed,
+          ...(data.aspectRatio ? { aspectRatio: data.aspectRatio } : {}),
+        });
+        const { error: mediaError } = await context.supabase
+          .from("generated_media")
+          .insert({
+            user_id: context.userId,
+            media_type: "image",
+            prompt,
+            status: "completed",
+            settings: {
+              aspectRatio: data.aspectRatio ?? "1:1",
+              style: data.style ?? "none",
+            },
+          });
+        if (mediaError)
+          throw new Error(
+            `Could not save generated image: ${mediaError.message}`,
+          );
+        await audit(context.userId, "image_generated");
+        return { ok: true, url: image.dataUrl, balance: spent.balance };
+      } catch (err) {
+        try {
+          await refund(
+            context.userId,
+            CREDIT_COSTS.image,
+            "image_generation_refund",
+          );
+        } catch (refundErr) {
+          console.error("[achyora] image refund failed", refundErr);
+        }
+        return toFailure(err);
       }
-      return toFailure(err);
-    }
-  });
+    },
+  );
 
 /* ------------------------------------------------------------------ video */
 
@@ -424,14 +550,21 @@ export const startVideo = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { prompt: string; aspectRatio?: string }) => input)
   .handler(
-    async ({ data, context }): Promise<AchyoraResult<{ jobId: string; balance: number }>> => {
+    async ({
+      data,
+      context,
+    }): Promise<AchyoraResult<{ jobId: string; balance: number }>> => {
       const prompt = (data.prompt ?? "").trim().slice(0, 2000);
       if (!prompt) return fail("INVALID_INPUT", "Describe the video you want.");
 
       const videoLimit = await consumeRateLimit("video", context.userId);
       if (!videoLimit.allowed) return fail("RATE_LIMITED");
 
-      const spent = await spend(context.userId, CREDIT_COSTS.video, "video_generation");
+      const spent = await spend(
+        context.userId,
+        CREDIT_COSTS.video,
+        "video_generation",
+      );
       if (!spent.ok) return fail("INSUFFICIENT_CREDITS");
 
       try {
@@ -439,18 +572,30 @@ export const startVideo = createServerFn({ method: "POST" })
           prompt,
           ...(data.aspectRatio ? { aspectRatio: data.aspectRatio } : {}),
         });
-        const { error: mediaError } = await context.supabase.from("generated_media").insert({
-          user_id: context.userId,
-          media_type: "video",
-          prompt,
-          status: "processing",
-          settings: { jobId: job.id, aspectRatio: data.aspectRatio ?? "16:9" },
-        });
-        if (mediaError) throw new Error(`Could not register video job: ${mediaError.message}`);
+        const { error: mediaError } = await context.supabase
+          .from("generated_media")
+          .insert({
+            user_id: context.userId,
+            media_type: "video",
+            prompt,
+            status: "processing",
+            settings: {
+              jobId: job.id,
+              aspectRatio: data.aspectRatio ?? "16:9",
+            },
+          });
+        if (mediaError)
+          throw new Error(
+            `Could not register video job: ${mediaError.message}`,
+          );
         return { ok: true, jobId: job.id, balance: spent.balance };
       } catch (err) {
         try {
-          await refund(context.userId, CREDIT_COSTS.video, "video_generation_refund");
+          await refund(
+            context.userId,
+            CREDIT_COSTS.video,
+            "video_generation_refund",
+          );
         } catch (refundErr) {
           console.error("[achyora] video refund failed", refundErr);
         }
@@ -475,7 +620,9 @@ export const pollVideo = createServerFn({ method: "POST" })
     async ({
       data,
       context,
-    }): Promise<AchyoraResult<{ status: string; url?: string; done?: boolean }>> => {
+    }): Promise<
+      AchyoraResult<{ status: string; url?: string; done?: boolean }>
+    > => {
       // Ownership: a job may only be polled by the account that created it.
       const { data: record } = await context.supabase
         .from("generated_media")
@@ -484,24 +631,30 @@ export const pollVideo = createServerFn({ method: "POST" })
         .eq("media_type", "video")
         .eq("settings->>jobId", data.jobId)
         .maybeSingle();
-      if (!record) return fail("NOT_FOUND", "That video job does not belong to this account.");
+      if (!record)
+        return fail(
+          "NOT_FOUND",
+          "That video job does not belong to this account.",
+        );
       if (record.status === "failed")
         return fail("AI_SERVICE_ERROR", "That video job did not complete.");
 
-      const elapsed = (Date.now() - new Date(record.created_at).getTime()) / 1000;
+      const elapsed =
+        (Date.now() - new Date(record.created_at).getTime()) / 1000;
       if (elapsed > videoTimeoutSeconds()) {
-        const { data: handled, error: failureError } = await context.supabase.rpc(
-          "fail_video_and_refund",
-          {
+        const { data: handled, error: failureError } =
+          await context.supabase.rpc("fail_video_and_refund", {
             _media_id: record.id,
             _user_id: context.userId,
             _amount: CREDIT_COSTS.video,
             _reason: "video_generation_timeout_refund",
-          },
-        );
+          });
         if (failureError) throw new Error(failureError.message);
         if (Array.isArray(handled) && !handled[0]?.handled) {
-          return fail("AI_SERVICE_ERROR", "That video job was already completed or cancelled.");
+          return fail(
+            "AI_SERVICE_ERROR",
+            "That video job was already completed or cancelled.",
+          );
         }
         return fail(
           "AI_SERVICE_ERROR",
@@ -512,15 +665,13 @@ export const pollVideo = createServerFn({ method: "POST" })
       try {
         const job = await getVideoJob(data.jobId);
         if (job.status === "failed") {
-          const { data: handled, error: failureError } = await context.supabase.rpc(
-            "fail_video_and_refund",
-            {
+          const { data: handled, error: failureError } =
+            await context.supabase.rpc("fail_video_and_refund", {
               _media_id: record.id,
               _user_id: context.userId,
               _amount: CREDIT_COSTS.video,
               _reason: "video_generation_refund",
-            },
-          );
+            });
           if (failureError) throw new Error(failureError.message);
           if (Array.isArray(handled) && !handled[0]?.handled) {
             return { ok: true, status: "failed", done: true };
@@ -550,10 +701,15 @@ export const transcribeVoice = createServerFn({ method: "POST" })
     async ({
       data,
       context,
-    }): Promise<AchyoraResult<{ transcript: string; reply: string; balance: number }>> => {
+    }): Promise<
+      AchyoraResult<{ transcript: string; reply: string; balance: number }>
+    > => {
       if (!data.base64) return fail("INVALID_INPUT", "No audio was captured.");
       if (data.base64.length > 8_000_000)
-        return fail("FILE_TOO_LARGE", "Keep recordings under about 60 seconds.");
+        return fail(
+          "FILE_TOO_LARGE",
+          "Keep recordings under about 60 seconds.",
+        );
 
       const voiceLimit = await consumeRateLimit("voice", context.userId);
       if (!voiceLimit.allowed) return fail("RATE_LIMITED");
@@ -562,7 +718,10 @@ export const transcribeVoice = createServerFn({ method: "POST" })
       if (!spent.ok) return fail("INSUFFICIENT_CREDITS");
 
       try {
-        const transcript = await transcribeAudio({ base64: data.base64, mimeType: data.mimeType });
+        const transcript = await transcribeAudio({
+          base64: data.base64,
+          mimeType: data.mimeType,
+        });
         if (!transcript) throw new Error("empty transcript");
         const reply = await chatComplete({
           system: `${ACHYORA_SYSTEM_PROMPT}\n\nThis message was spoken aloud. Reply concisely, as if speaking back.`,

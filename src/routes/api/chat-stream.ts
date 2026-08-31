@@ -11,7 +11,11 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { ACHYORA_SYSTEM_PROMPT } from "@/lib/ai/prompts";
 import { parseModelId } from "@/lib/ai/models";
-import { AiConfigurationError, AiServiceError, chatStream } from "@/lib/ai/provider.server";
+import {
+  AiConfigurationError,
+  AiServiceError,
+  chatStream,
+} from "@/lib/ai/provider.server";
 import { sseResponse } from "@/lib/ai/stream.server";
 import { refund, spend } from "@/lib/achyora.server";
 import { AuthConfigurationError, authenticateRequest } from "@/lib/auth.server";
@@ -55,17 +59,25 @@ export const Route = createFileRoute("/api/chat-stream")({
         try {
           body = (await request.json()) as Body;
         } catch {
-          return json(fail("INVALID_INPUT", "The request body could not be read."), 400);
+          return json(
+            fail("INVALID_INPUT", "The request body could not be read."),
+            400,
+          );
         }
 
-        const conversationId = typeof body.conversationId === "string" ? body.conversationId : "";
+        const conversationId =
+          typeof body.conversationId === "string" ? body.conversationId : "";
         const content = (body.content ?? "").trim().slice(0, MAX_CHARS);
-        if (!conversationId) return json(fail("INVALID_INPUT", "Missing conversation."), 400);
-        if (!content) return json(fail("INVALID_INPUT", "Write a message first."), 400);
+        if (!conversationId)
+          return json(fail("INVALID_INPUT", "Missing conversation."), 400);
+        if (!content)
+          return json(fail("INVALID_INPUT", "Write a message first."), 400);
 
         const history = (body.history ?? [])
           .filter(
-            (m) => (m.role === "user" || m.role === "assistant") && typeof m.content === "string",
+            (m) =>
+              (m.role === "user" || m.role === "assistant") &&
+              typeof m.content === "string",
           )
           .slice(-MAX_TURNS)
           .map((m) => ({
@@ -84,7 +96,11 @@ export const Route = createFileRoute("/api/chat-stream")({
           });
         }
 
-        const spent = await spend(auth.userId, CREDIT_COSTS.chat, "chat_message");
+        const spent = await spend(
+          auth.userId,
+          CREDIT_COSTS.chat,
+          "chat_message",
+        );
         if (!spent.ok) return json(fail("INSUFFICIENT_CREDITS"), 402);
 
         const routed = parseModelId(body.modelId);
@@ -97,13 +113,18 @@ export const Route = createFileRoute("/api/chat-stream")({
             ...(routed.model ? { model: routed.model } : {}),
           });
         } catch (err) {
-          await refund(auth.userId, CREDIT_COSTS.chat, "chat_message_refund").catch(
-            () => undefined,
-          );
+          await refund(
+            auth.userId,
+            CREDIT_COSTS.chat,
+            "chat_message_refund",
+          ).catch(() => undefined);
           if (err instanceof AiConfigurationError) {
             return json(fail("AI_SERVICE_NOT_CONFIGURED", err.message), 503);
           }
-          console.error("chat stream open failed", err instanceof Error ? err.message : err);
+          console.error(
+            "chat stream open failed",
+            err instanceof Error ? err.message : err,
+          );
           // Every configured provider/model in the chain already failed. A
           // transient upstream failure (quota, overload, outage) is a "try again"
           // for the user, not a defect: surface one calm sentence and never the
@@ -132,9 +153,16 @@ export const Route = createFileRoute("/api/chat-stream")({
               send({ type: "delta", text: delta });
             }
           } catch (err) {
-            console.error("chat stream failed", err instanceof Error ? err.message : err);
+            console.error(
+              "chat stream failed",
+              err instanceof Error ? err.message : err,
+            );
             if (!text) {
-              await refund(userId, CREDIT_COSTS.chat, "chat_message_refund").catch(() => undefined);
+              await refund(
+                userId,
+                CREDIT_COSTS.chat,
+                "chat_message_refund",
+              ).catch(() => undefined);
               send({
                 type: "error",
                 code: "AI_SERVICE_ERROR",
@@ -145,7 +173,11 @@ export const Route = createFileRoute("/api/chat-stream")({
           }
 
           if (!text.trim()) {
-            await refund(userId, CREDIT_COSTS.chat, "chat_message_refund").catch(() => undefined);
+            await refund(
+              userId,
+              CREDIT_COSTS.chat,
+              "chat_message_refund",
+            ).catch(() => undefined);
             send({
               type: "error",
               code: "AI_SERVICE_ERROR",
@@ -156,15 +188,22 @@ export const Route = createFileRoute("/api/chat-stream")({
 
           let title: string | undefined;
           try {
-            const { error: messageError } = await supabase.from("messages").insert([
-              { conversation_id: conversationId, user_id: userId, role: "user", content },
-              {
-                conversation_id: conversationId,
-                user_id: userId,
-                role: "assistant",
-                content: text,
-              },
-            ]);
+            const { error: messageError } = await supabase
+              .from("messages")
+              .insert([
+                {
+                  conversation_id: conversationId,
+                  user_id: userId,
+                  role: "user",
+                  content,
+                },
+                {
+                  conversation_id: conversationId,
+                  user_id: userId,
+                  role: "assistant",
+                  content: text,
+                },
+              ]);
             if (messageError) throw new Error(messageError.message);
             if (history.length === 0) {
               title = content.replace(/\s+/g, " ").slice(0, 60);
@@ -183,15 +222,24 @@ export const Route = createFileRoute("/api/chat-stream")({
           } catch (err) {
             // The answer was already delivered. Refund the charge if the durable
             // history write failed, so persistence failure never costs a credit.
-            console.error("chat persistence failed", err instanceof Error ? err.message : err);
-            await refund(userId, CREDIT_COSTS.chat, "chat_message_persistence_refund").catch(
-              (refundErr) => {
-                console.error("chat persistence refund failed", refundErr);
-              },
+            console.error(
+              "chat persistence failed",
+              err instanceof Error ? err.message : err,
             );
+            await refund(
+              userId,
+              CREDIT_COSTS.chat,
+              "chat_message_persistence_refund",
+            ).catch((refundErr) => {
+              console.error("chat persistence refund failed", refundErr);
+            });
           }
 
-          send({ type: "done", balance: spent.balance, ...(title ? { title } : {}) });
+          send({
+            type: "done",
+            balance: spent.balance,
+            ...(title ? { title } : {}),
+          });
         });
       },
     },

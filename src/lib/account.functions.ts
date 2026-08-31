@@ -12,9 +12,14 @@ export const ensureAccountBootstrap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const claims = context.claims as Record<string, unknown> | undefined;
-    const email = typeof claims?.["email"] === "string" ? (claims["email"] as string) : undefined;
+    const email =
+      typeof claims?.["email"] === "string"
+        ? (claims["email"] as string)
+        : undefined;
     const metadata =
-      claims && typeof claims["user_metadata"] === "object" && claims["user_metadata"] !== null
+      claims &&
+      typeof claims["user_metadata"] === "object" &&
+      claims["user_metadata"] !== null
         ? (claims["user_metadata"] as Record<string, unknown>)
         : undefined;
 

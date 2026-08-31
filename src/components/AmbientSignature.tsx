@@ -18,7 +18,9 @@ function useIntensity(): Intensity {
 
   useEffect(() => {
     const compute = () => {
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const reduced = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
       if (reduced) return "static" as const;
       const cores = navigator.hardwareConcurrency ?? 4;
       if (cores <= 2) return "static" as const;
@@ -43,14 +45,19 @@ export function AmbientSignature() {
   const showParticles = intensity === "full";
 
   return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+    >
       {/* moonlit aura */}
       <div
         className="absolute left-1/2 top-[18%] h-[46rem] w-[46rem] -translate-x-1/2 -translate-y-1/3 rounded-full blur-3xl"
         style={{
           background:
             "radial-gradient(circle, color-mix(in oklab, var(--ice) 26%, transparent) 0%, color-mix(in oklab, var(--ice) 8%, transparent) 42%, transparent 70%)",
-          animation: animate ? "ach-breathe 14s ease-in-out infinite" : undefined,
+          animation: animate
+            ? "ach-breathe 14s ease-in-out infinite"
+            : undefined,
         }}
       />
       <div
@@ -77,7 +84,11 @@ export function AmbientSignature() {
           <linearGradient id="ach-arc" x1="0" y1="1" x2="1" y2="0">
             <stop offset="0%" stopColor="var(--titanium)" stopOpacity="0.05" />
             <stop offset="60%" stopColor="var(--ice)" stopOpacity="0.22" />
-            <stop offset="100%" stopColor="var(--titanium)" stopOpacity="0.03" />
+            <stop
+              offset="100%"
+              stopColor="var(--titanium)"
+              stopOpacity="0.03"
+            />
           </linearGradient>
         </defs>
 
@@ -118,7 +129,11 @@ export function AmbientSignature() {
           stroke="url(#ach-wave)"
           strokeWidth="1.4"
           strokeDasharray="18 26"
-          style={{ animation: animate ? "ach-flute-wave 34s linear infinite" : undefined }}
+          style={{
+            animation: animate
+              ? "ach-flute-wave 34s linear infinite"
+              : undefined,
+          }}
         />
         <path
           d="M-200 528 C 160 470, 300 600, 600 528 S 1000 460, 1400 528"
@@ -127,7 +142,11 @@ export function AmbientSignature() {
           strokeWidth="0.9"
           strokeDasharray="10 34"
           opacity="0.6"
-          style={{ animation: animate ? "ach-flute-wave 52s linear infinite reverse" : undefined }}
+          style={{
+            animation: animate
+              ? "ach-flute-wave 52s linear infinite reverse"
+              : undefined,
+          }}
         />
 
         {/* restrained feather curvature */}
@@ -139,7 +158,11 @@ export function AmbientSignature() {
             strokeWidth="26"
             strokeLinecap="round"
             opacity="0.10"
-            style={{ animation: animate ? "ach-drift 30s ease-in-out infinite" : undefined }}
+            style={{
+              animation: animate
+                ? "ach-drift 30s ease-in-out infinite"
+                : undefined,
+            }}
           />
         ) : null}
 

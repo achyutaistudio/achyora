@@ -13,7 +13,10 @@ export function LoadingState({
 }) {
   return (
     <div
-      className={cn("flex items-center gap-2 text-sm text-muted-foreground", className)}
+      className={cn(
+        "flex items-center gap-2 text-sm text-muted-foreground",
+        className,
+      )}
       role="status"
     >
       <Loader2 className="h-4 w-4 animate-spin" />
@@ -33,12 +36,20 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border px-6 py-14 text-center">
-      <Inbox className="mb-3 h-6 w-6 text-muted-foreground" aria-hidden="true" />
-      <p className="text-sm font-600 text-foreground" style={{ fontWeight: 600 }}>
+      <Inbox
+        className="mb-3 h-6 w-6 text-muted-foreground"
+        aria-hidden="true"
+      />
+      <p
+        className="text-sm font-600 text-foreground"
+        style={{ fontWeight: 600 }}
+      >
         {title}
       </p>
       {description ? (
-        <p className="mt-1 max-w-sm text-sm text-muted-foreground">{description}</p>
+        <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+          {description}
+        </p>
       ) : null}
       {action ? <div className="mt-5">{action}</div> : null}
     </div>
@@ -60,7 +71,10 @@ export function ErrorState({
       className="flex flex-col gap-3 rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between"
     >
       <div className="flex items-start gap-2.5">
-        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
+        <AlertTriangle
+          className="mt-0.5 h-4 w-4 shrink-0 text-destructive"
+          aria-hidden="true"
+        />
         <div>
           <p className="text-sm text-foreground">{message}</p>
           {code ? (

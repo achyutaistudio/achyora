@@ -42,12 +42,17 @@ const DEFAULT_MESSAGES: Record<ErrorCode, string> = {
   NOT_FOUND: "We couldn't find that.",
   RATE_LIMITED: "Too many requests. Please slow down and try again.",
   PAYMENT_FAILED: "The payment could not be completed.",
-  PAYMENTS_NOT_CONFIGURED: "Payments are not configured on this deployment yet.",
+  PAYMENTS_NOT_CONFIGURED:
+    "Payments are not configured on this deployment yet.",
   UNSUPPORTED_FEATURE: "This capability is not available on this deployment.",
   UNKNOWN: "Something went wrong. Please try again.",
 };
 
-export function fail(code: ErrorCode, message?: string, details?: Json): AchyoraFailure {
+export function fail(
+  code: ErrorCode,
+  message?: string,
+  details?: Json,
+): AchyoraFailure {
   return {
     ok: false,
     code,
@@ -56,7 +61,9 @@ export function fail(code: ErrorCode, message?: string, details?: Json): Achyora
   };
 }
 
-export function isFailure<T>(result: AchyoraResult<T>): result is AchyoraFailure {
+export function isFailure<T>(
+  result: AchyoraResult<T>,
+): result is AchyoraFailure {
   return result.ok === false;
 }
 

@@ -16,14 +16,19 @@ import { createSupabaseServerClient } from "@/integrations/supabase/server-clien
 /** Only same-origin, relative paths are accepted as a redirect destination. */
 function safeNext(raw: string | null): string {
   if (!raw) return "/workspace";
-  if (!raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/\\")) return "/workspace";
+  if (!raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/\\"))
+    return "/workspace";
   // Never bounce back into the callback or the sign-in form.
   const path = raw.split("?")[0];
-  if (path === "/auth" || path === "/auth/" || path === "/auth/callback") return "/workspace";
+  if (path === "/auth" || path === "/auth/" || path === "/auth/callback")
+    return "/workspace";
   return raw;
 }
 
-function redirectTo(location: string, setCookieHeaders: string[] = []): Response {
+function redirectTo(
+  location: string,
+  setCookieHeaders: string[] = [],
+): Response {
   const headers = new Headers({ location });
   for (const cookie of setCookieHeaders) headers.append("set-cookie", cookie);
   return new Response(null, { status: 302, headers });
@@ -31,7 +36,11 @@ function redirectTo(location: string, setCookieHeaders: string[] = []): Response
 
 function failure(request: Request, reason: string): Response {
   // Always visible in dev logs so callback failures are diagnosable.
-  console.error("[auth/callback] sign-in failed:", reason, new URL(request.url).search);
+  console.error(
+    "[auth/callback] sign-in failed:",
+    reason,
+    new URL(request.url).search,
+  );
   const params = new URLSearchParams({ mode: "signin", auth_error: reason });
   return redirectTo(`/auth?${params.toString()}`);
 }
@@ -45,12 +54,16 @@ export const Route = createFileRoute("/auth/callback")({
 
         // Supabase can return a provider error instead of a code.
         const providerError =
-          url.searchParams.get("error_description") ?? url.searchParams.get("error");
+          url.searchParams.get("error_description") ??
+          url.searchParams.get("error");
         if (providerError) return failure(request, providerError);
 
         const code = url.searchParams.get("code");
         if (!code) {
-          return failure(request, "No authorization code was returned by Google.");
+          return failure(
+            request,
+            "No authorization code was returned by Google.",
+          );
         }
 
         let supabase: ReturnType<typeof createSupabaseServerClient>;
@@ -63,12 +76,14 @@ export const Route = createFileRoute("/auth/callback")({
           );
         }
 
-        const { data, error } = await supabase.client.auth.exchangeCodeForSession(code);
+        const { data, error } =
+          await supabase.client.auth.exchangeCodeForSession(code);
 
         if (error || !data?.session) {
           return failure(
             request,
-            error?.message ?? "The sign-in code could not be exchanged for a session.",
+            error?.message ??
+              "The sign-in code could not be exchanged for a session.",
           );
         }
 

@@ -24,7 +24,8 @@ export const Route = createFileRoute("/workspace/sanatan")({
       { property: "og:title", content: "Sanatan Research — ACHYORA Workspace" },
       {
         property: "og:description",
-        content: "Respectful, source-classified answers across Sanatan traditions.",
+        content:
+          "Respectful, source-classified answers across Sanatan traditions.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -40,7 +41,9 @@ function SanatanSurface() {
   const [busy, setBusy] = useState(false);
   const [query, setQuery] = useState("");
   const [brief, setBrief] = useState<SanatanBrief | null>(null);
-  const [error, setError] = useState<{ code?: string; message: string } | null>(null);
+  const [error, setError] = useState<{ code?: string; message: string } | null>(
+    null,
+  );
 
   async function submit(value: string) {
     setBusy(true);
@@ -51,7 +54,10 @@ function SanatanSurface() {
     try {
       const result = await run({ data: { query: value } });
       if (!result.ok) {
-        setError({ ...(result.code ? { code: result.code } : {}), message: result.message });
+        setError({
+          ...(result.code ? { code: result.code } : {}),
+          message: result.message,
+        });
         return;
       }
       setBrief(result.brief as unknown as SanatanBrief);
@@ -68,7 +74,10 @@ function SanatanSurface() {
   // invented here. Each one hands the question to the existing chat experience.
   const threads = brief
     ? [
-        ...(brief.key_findings ?? []).map((f) => ({ label: f, prompt: `${query}\n\n${f}` })),
+        ...(brief.key_findings ?? []).map((f) => ({
+          label: f,
+          prompt: `${query}\n\n${f}`,
+        })),
         ...(brief.evidence ?? []).map((e) => ({
           label: e.claim,
           prompt: `${query}\n\n${e.claim}`,
@@ -82,12 +91,15 @@ function SanatanSurface() {
         <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl border border-border/70 bg-secondary/45 text-primary">
           <BookOpenText className="h-5 w-5" aria-hidden="true" />
         </div>
-        <p className="mt-4 text-[0.65rem] uppercase tracking-[0.28em] text-muted-foreground">Sanatan</p>
+        <p className="mt-4 text-[0.65rem] uppercase tracking-[0.28em] text-muted-foreground">
+          Sanatan
+        </p>
         <h1 className="mt-3 text-balance text-2xl font-semibold tracking-[-0.035em] text-foreground sm:text-3xl">
           Ask with reverence. Study with clarity.
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-          Scripture, tradition, history and interpretation remain clearly distinguished.
+          Scripture, tradition, history and interpretation remain clearly
+          distinguished.
         </p>
       </header>
       <div className="mx-auto mt-8 max-w-2xl">
@@ -103,7 +115,10 @@ function SanatanSurface() {
 
       <div className="mx-auto mt-10 max-w-3xl space-y-8">
         {error ? (
-          <ErrorState {...(error.code ? { code: error.code } : {})} message={error.message} />
+          <ErrorState
+            {...(error.code ? { code: error.code } : {})}
+            message={error.message}
+          />
         ) : null}
         {busy ? <LoadingState label="Studying the question…" /> : null}
         {!busy && !brief && !error ? (
@@ -131,7 +146,9 @@ function SanatanSurface() {
                     search={{ prompt: t.prompt }}
                     className="group flex h-full items-start gap-3 rounded-2xl border border-border bg-card p-4 text-left text-sm text-muted-foreground transition-colors hover:border-ring/60 hover:text-foreground"
                   >
-                    <span className="line-clamp-3 min-w-0 flex-1">{t.label}</span>
+                    <span className="line-clamp-3 min-w-0 flex-1">
+                      {t.label}
+                    </span>
                     <ArrowRight
                       className="mt-0.5 h-4 w-4 shrink-0 opacity-60 transition-transform group-hover:translate-x-0.5"
                       aria-hidden="true"

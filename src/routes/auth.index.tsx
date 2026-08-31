@@ -1,4 +1,9 @@
-import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  useNavigate,
+  useSearch,
+} from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { AchyoraWordmark } from "@/components/brand/AchyoraMark";
@@ -38,7 +43,8 @@ function AuthPage() {
   useEffect(() => {
     let cancelled = false;
     void waitForSession().then((session) => {
-      if (!cancelled && session) void navigate({ to: "/workspace", replace: true });
+      if (!cancelled && session)
+        void navigate({ to: "/workspace", replace: true });
     });
     return () => {
       cancelled = true;
@@ -55,17 +61,24 @@ function AuthPage() {
       if (mode === "reset") {
         // Recovery links now go through the server callback (PKCE code
         // exchange), which then forwards to the reset form with a session.
-        const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/auth/callback?next=%2Fauth%2Freset-password`,
-        });
+        const { error: err } = await supabase.auth.resetPasswordForEmail(
+          email,
+          {
+            redirectTo: `${window.location.origin}/auth/callback?next=%2Fauth%2Freset-password`,
+          },
+        );
         if (err) throw err;
-        setNotice("If that address has an account, a reset link is on its way.");
+        setNotice(
+          "If that address has an account, a reset link is on its way.",
+        );
       } else if (mode === "signup") {
         track("sign_up_started");
         const { data, error: err } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
         });
         if (err) throw err;
         if (data.session) {
@@ -76,13 +89,20 @@ function AuthPage() {
         }
       } else {
         track("sign_in_started");
-        const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+        const { error: err } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
         if (err) throw err;
         track("sign_in_completed");
         await navigate({ to: "/workspace" });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "We couldn't complete that. Please try again.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "We couldn't complete that. Please try again.",
+      );
     } finally {
       setBusy(false);
     }
@@ -152,7 +172,10 @@ function AuthPage() {
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
-              <label htmlFor="email" className="mb-1.5 block text-sm text-muted-foreground">
+              <label
+                htmlFor="email"
+                className="mb-1.5 block text-sm text-muted-foreground"
+              >
                 Email
               </label>
               <input
@@ -168,7 +191,10 @@ function AuthPage() {
             </div>
             {mode !== "reset" ? (
               <div>
-                <label htmlFor="password" className="mb-1.5 block text-sm text-muted-foreground">
+                <label
+                  htmlFor="password"
+                  className="mb-1.5 block text-sm text-muted-foreground"
+                >
                   Password
                 </label>
                 <input
@@ -176,7 +202,9 @@ function AuthPage() {
                   type="password"
                   required
                   minLength={8}
-                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  autoComplete={
+                    mode === "signup" ? "new-password" : "current-password"
+                  }
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none"

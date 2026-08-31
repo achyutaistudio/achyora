@@ -16,12 +16,14 @@ export const Route = createFileRoute("/workspace/video")({
       { title: "Video — ACHYORA Workspace" },
       {
         name: "description",
-        content: "Queue a video generation job in ACHYORA and follow its real status.",
+        content:
+          "Queue a video generation job in ACHYORA and follow its real status.",
       },
       { property: "og:title", content: "Video — ACHYORA Workspace" },
       {
         property: "og:description",
-        content: "Describe a scene and track the real generation job to completion.",
+        content:
+          "Describe a scene and track the real generation job to completion.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -39,15 +41,24 @@ function VideoSurface() {
 
 function VideoDisabledSurface() {
   return (
-    <WorkspacePage width="wide" className="flex min-h-full items-center justify-center px-6 py-10">
+    <WorkspacePage
+      width="wide"
+      className="flex min-h-full items-center justify-center px-6 py-10"
+    >
       <div className="w-full max-w-xl rounded-2xl border border-border bg-card p-8 text-center">
-        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Video</p>
-        <h1 className="mt-2 text-xl text-foreground" style={{ fontWeight: 650 }}>
+        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+          Video
+        </p>
+        <h1
+          className="mt-2 text-xl text-foreground"
+          style={{ fontWeight: 650 }}
+        >
           Video is currently disabled
         </h1>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          The video backend remains installed, but the user-facing video feature is intentionally
-          disabled until it is enabled from the product configuration.
+          The video backend remains installed, but the user-facing video feature
+          is intentionally disabled until it is enabled from the product
+          configuration.
         </p>
       </div>
     </WorkspacePage>
@@ -62,7 +73,9 @@ function VideoEnabledSurface() {
   const [status, setStatus] = useState<string | null>(null);
   const [url, setUrl] = useState<string | null>(null);
   const [ratio, setRatio] = useState("16:9");
-  const [error, setError] = useState<{ code?: string; message: string } | null>(null);
+  const [error, setError] = useState<{ code?: string; message: string } | null>(
+    null,
+  );
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const deadline = useRef<number>(0);
 
@@ -83,7 +96,9 @@ function VideoEnabledSurface() {
     // run forever, whatever the provider does.
     if (Date.now() > deadline.current) {
       stopWatching();
-      setError({ message: "The video job took too long. Your credits were returned." });
+      setError({
+        message: "The video job took too long. Your credits were returned.",
+      });
       setBusy(false);
       return;
     }
@@ -91,7 +106,10 @@ function VideoEnabledSurface() {
     const result = await poll({ data: { jobId } });
     if (!result.ok) {
       stopWatching();
-      setError({ ...(result.code ? { code: result.code } : {}), message: result.message });
+      setError({
+        ...(result.code ? { code: result.code } : {}),
+        message: result.message,
+      });
       setBusy(false);
       await qc.invalidateQueries({ queryKey: ["account"] });
       return;
@@ -106,7 +124,10 @@ function VideoEnabledSurface() {
     }
     if (result.status === "failed") {
       stopWatching();
-      setError({ message: "The video job failed at the provider. Your credits were returned." });
+      setError({
+        message:
+          "The video job failed at the provider. Your credits were returned.",
+      });
       setBusy(false);
       await qc.invalidateQueries({ queryKey: ["account"] });
       return;
@@ -122,7 +143,10 @@ function VideoEnabledSurface() {
     track("video_generation_started");
     const result = await start({ data: { prompt, aspectRatio: ratio } });
     if (!result.ok) {
-      setError({ ...(result.code ? { code: result.code } : {}), message: result.message });
+      setError({
+        ...(result.code ? { code: result.code } : {}),
+        message: result.message,
+      });
       setBusy(false);
       return;
     }
@@ -162,9 +186,14 @@ function VideoEnabledSurface() {
       </div>
       <div className="mt-8">
         {error ? (
-          <ErrorState {...(error.code ? { code: error.code } : {})} message={error.message} />
+          <ErrorState
+            {...(error.code ? { code: error.code } : {})}
+            message={error.message}
+          />
         ) : null}
-        {busy ? <LoadingState label={`Job status: ${status ?? "queued"}…`} /> : null}
+        {busy ? (
+          <LoadingState label={`Job status: ${status ?? "queued"}…`} />
+        ) : null}
         {!busy && !url && !error ? (
           <EmptyState
             title="No video yet"
@@ -172,7 +201,11 @@ function VideoEnabledSurface() {
           />
         ) : null}
         {url ? (
-          <video src={url} controls className="w-full rounded-2xl border border-border" />
+          <video
+            src={url}
+            controls
+            className="w-full rounded-2xl border border-border"
+          />
         ) : null}
       </div>
     </WorkspacePage>

@@ -12,7 +12,8 @@ export const Route = createFileRoute("/workspace/overview")({
       { title: "Workspace — ACHYORA" },
       {
         name: "description",
-        content: "Your ACHYORA workspace: credits, models and every creation surface.",
+        content:
+          "Your ACHYORA workspace: credits, models and every creation surface.",
       },
       { property: "og:title", content: "Workspace — ACHYORA" },
       {
@@ -51,7 +52,11 @@ const SURFACES = [
     title: "Video",
     body: "Queue a video generation job and track its status.",
   },
-  { to: "/workspace/voice", title: "Voice", body: "Speak a prompt and get a spoken-style reply." },
+  {
+    to: "/workspace/voice",
+    title: "Voice",
+    body: "Speak a prompt and get a spoken-style reply.",
+  },
   {
     to: "/workspace/library",
     title: "Library",
@@ -63,8 +68,14 @@ function Overview() {
   const account = useServerFn(getAccount);
   const catalog = useServerFn(getAiCatalog);
 
-  const accountQuery = useQuery({ queryKey: ["account"], queryFn: () => account() });
-  const catalogQuery = useQuery({ queryKey: ["ai-catalog"], queryFn: () => catalog() });
+  const accountQuery = useQuery({
+    queryKey: ["account"],
+    queryFn: () => account(),
+  });
+  const catalogQuery = useQuery({
+    queryKey: ["ai-catalog"],
+    queryFn: () => catalog(),
+  });
 
   return (
     <WorkspacePage
@@ -73,25 +84,36 @@ function Overview() {
     >
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         <div className="rounded-2xl border border-border bg-card p-5">
-          <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Credits</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            Credits
+          </p>
           {accountQuery.isPending ? (
             <LoadingState label="Loading…" className="mt-3" />
           ) : accountQuery.isError ? (
             <p className="mt-2 text-sm text-muted-foreground">Unavailable</p>
           ) : (
             <>
-              <p className="mt-2 text-3xl text-foreground" style={{ fontWeight: 700 }}>
+              <p
+                className="mt-2 text-3xl text-foreground"
+                style={{ fontWeight: 700 }}
+              >
                 {accountQuery.data?.credits?.balance ?? 0}
               </p>
               <p className="text-xs text-muted-foreground">
-                of {accountQuery.data?.credits?.daily_allowance ?? 10} every 24 hours
+                of {accountQuery.data?.credits?.daily_allowance ?? 10} every 24
+                hours
               </p>
             </>
           )}
         </div>
         <div className="rounded-2xl border border-border bg-card p-5">
-          <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Plan</p>
-          <p className="mt-2 text-lg text-foreground" style={{ fontWeight: 600 }}>
+          <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            Plan
+          </p>
+          <p
+            className="mt-2 text-lg text-foreground"
+            style={{ fontWeight: 600 }}
+          >
             {accountQuery.data?.subscription?.plan ?? "free"}
           </p>
           <p className="text-xs text-muted-foreground">
@@ -102,11 +124,15 @@ function Overview() {
           <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
             Models available
           </p>
-          <p className="mt-2 text-3xl text-foreground" style={{ fontWeight: 700 }}>
+          <p
+            className="mt-2 text-3xl text-foreground"
+            style={{ fontWeight: 700 }}
+          >
             {catalogQuery.data?.models.length ?? 0}
           </p>
           <p className="text-xs text-muted-foreground">
-            {catalogQuery.data?.providers.join(", ") || "No provider configured"}
+            {catalogQuery.data?.providers.join(", ") ||
+              "No provider configured"}
           </p>
         </div>
       </div>

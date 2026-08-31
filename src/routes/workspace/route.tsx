@@ -24,7 +24,10 @@ const COLLAPSE_KEY = "achyora.sidebarCollapsed";
 
 function CreditChip() {
   const accountFn = useServerFn(getAccount);
-  const account = useQuery({ queryKey: ["account"], queryFn: () => accountFn() });
+  const account = useQuery({
+    queryKey: ["account"],
+    queryFn: () => accountFn(),
+  });
   const balance = account.data?.credits?.balance;
   if (balance === undefined || balance === null) return null;
   return (
@@ -74,7 +77,11 @@ function WorkspaceLayout() {
       const session = await waitForSession();
       if (cancelled) return;
       if (!session) {
-        await navigate({ to: "/auth", search: { mode: "signin" }, replace: true });
+        await navigate({
+          to: "/auth",
+          search: { mode: "signin" },
+          replace: true,
+        });
         return;
       }
       // A valid session grants workspace access. Provisioning is idempotent but
@@ -96,7 +103,11 @@ function WorkspaceLayout() {
           collapsed ? "w-[4.5rem]" : "w-64",
         )}
       >
-        <WorkspaceSidebar collapsed={collapsed} onToggle={toggleCollapsed} user={user} />
+        <WorkspaceSidebar
+          collapsed={collapsed}
+          onToggle={toggleCollapsed}
+          user={user}
+        />
       </aside>
 
       {/* Mobile drawer — same component, no duplicate navigation model. */}
@@ -127,10 +138,17 @@ function WorkspaceLayout() {
             aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
             className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border/70 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground lg:hidden"
           >
-            {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            {mobileOpen ? (
+              <X className="h-4 w-4" />
+            ) : (
+              <Menu className="h-4 w-4" />
+            )}
           </button>
 
-          <AchyoraWordmark to="/workspace/chat" className="lg:hidden [&_img]:h-7 [&_img]:w-7 [&_span_span]:text-[0.78rem]" />
+          <AchyoraWordmark
+            to="/workspace/chat"
+            className="lg:hidden [&_img]:h-7 [&_img]:w-7 [&_span_span]:text-[0.78rem]"
+          />
 
           <p className="hidden text-xs uppercase tracking-[0.18em] text-muted-foreground lg:block">
             Ask · Create · Understand

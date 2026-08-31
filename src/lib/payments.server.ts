@@ -23,7 +23,9 @@ function env(name: string): string | undefined {
 
 export function razorpayConfigured(): boolean {
   return Boolean(
-    env("RAZORPAY_KEY_ID") && env("RAZORPAY_KEY_SECRET") && env("RAZORPAY_WEBHOOK_SECRET"),
+    env("RAZORPAY_KEY_ID") &&
+    env("RAZORPAY_KEY_SECRET") &&
+    env("RAZORPAY_WEBHOOK_SECRET"),
   );
 }
 
@@ -38,7 +40,12 @@ function credentials() {
   return { keyId, keySecret };
 }
 
-export type RazorpayOrder = { id: string; amount: number; currency: string; keyId: string };
+export type RazorpayOrder = {
+  id: string;
+  amount: number;
+  currency: string;
+  keyId: string;
+};
 
 export async function createRazorpayOrder(input: {
   amount: number; // smallest currency unit
@@ -62,10 +69,17 @@ export async function createRazorpayOrder(input: {
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new PaymentFailedError(`Razorpay rejected the order request. ${body.slice(0, 200)}`);
+    throw new PaymentFailedError(
+      `Razorpay rejected the order request. ${body.slice(0, 200)}`,
+    );
   }
-  const order = (await res.json()) as { id?: string; amount?: number; currency?: string };
-  if (!order.id) throw new PaymentFailedError("Razorpay did not return an order id.");
+  const order = (await res.json()) as {
+    id?: string;
+    amount?: number;
+    currency?: string;
+  };
+  if (!order.id)
+    throw new PaymentFailedError("Razorpay did not return an order id.");
   return {
     id: order.id,
     amount: order.amount ?? input.amount,
@@ -95,7 +109,9 @@ export async function verifyRazorpaySignature(
     ["sign"],
   );
   const mac = await crypto.subtle.sign("HMAC", key, encoder.encode(rawBody));
-  const expected = [...new Uint8Array(mac)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  const expected = [...new Uint8Array(mac)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 
   const provided = signature.trim().toLowerCase();
   if (provided.length !== expected.length) return false;
