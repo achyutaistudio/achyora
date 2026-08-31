@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight, BookOpenText, Search } from "lucide-react";
 
 import { Composer } from "@/components/Composer";
 import { EmptyState, ErrorState, LoadingState } from "@/components/States";
@@ -77,26 +77,31 @@ function SanatanSurface() {
     : [];
 
   return (
-    <WorkspacePage
-      title="Sanatan"
-      description="Answers distinguish scripture, tradition, history and interpretation — and say plainly where traditions differ."
-    >
-      <div className="mt-6">
-        <div className="flex items-center gap-2 pb-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-          <Search className="h-3.5 w-3.5" aria-hidden="true" />
-          Search Sanatan
+    <WorkspacePage>
+      <header className="mx-auto max-w-2xl pt-8 text-center sm:pt-14">
+        <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl border border-border/70 bg-secondary/45 text-primary">
+          <BookOpenText className="h-5 w-5" aria-hidden="true" />
         </div>
+        <p className="mt-4 text-[0.65rem] uppercase tracking-[0.28em] text-muted-foreground">Sanatan</p>
+        <h1 className="mt-3 text-balance text-2xl font-semibold tracking-[-0.035em] text-foreground sm:text-3xl">
+          Ask with reverence. Study with clarity.
+        </h1>
+        <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
+          Scripture, tradition, history and interpretation remain clearly distinguished.
+        </p>
+      </header>
+      <div className="mx-auto mt-8 max-w-2xl">
         <Composer
           onSubmit={(v) => void submitOnce(v)}
           busy={busy}
           size="md"
           attachments={false}
-          placeholder="Search a text, tradition or practice…"
+          placeholder="Ask about a verse, text, tradition or practice…"
           hint="2 credits per brief. Sources are never invented."
         />
       </div>
 
-      <div className="mt-8 space-y-8">
+      <div className="mx-auto mt-10 max-w-3xl space-y-8">
         {error ? (
           <ErrorState {...(error.code ? { code: error.code } : {})} message={error.message} />
         ) : null}

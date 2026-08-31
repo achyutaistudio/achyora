@@ -111,6 +111,9 @@
   --sidebar-accent-foreground: oklch(0.96 0.008 250);
   --sidebar-border: oklch(0.30 0.035 260);
   --sidebar-ring: oklch(0.83 0.098 232);
+
+  --cinema-gold: oklch(0.84 0.105 78);
+  --cinema-indigo: oklch(0.16 0.075 278);
 }
 
 @layer base {
@@ -224,6 +227,81 @@
   animation: ach-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.workspace-shell {
+  background:
+    radial-gradient(circle at 72% 8%, color-mix(in oklab, var(--ice) 7%, transparent), transparent 34rem),
+    var(--background);
+}
+
+.workspace-page {
+  animation: ach-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.command-bar {
+  background:
+    linear-gradient(180deg, color-mix(in oklab, var(--surface-strong) 82%, transparent), color-mix(in oklab, var(--surface) 72%, transparent));
+  backdrop-filter: blur(24px);
+}
+
+.landing-cinema__visual {
+  position: absolute;
+  inset: -7%;
+  z-index: -3;
+  opacity: 0.9;
+  filter: saturate(0.85);
+}
+
+.landing-cinema__visual canvas {
+  transform: scale(1.18) translateX(17%);
+  transform-origin: center;
+}
+
+.krishna-static-fallback {
+  opacity: 0.09;
+  filter: invert(1) sepia(0.35) saturate(1.35);
+  transform: scale(0.78) translateX(20%);
+}
+
+.landing-cinema__veil {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    linear-gradient(90deg, color-mix(in oklab, var(--cinema-indigo) 88%, transparent), color-mix(in oklab, var(--background) 32%, transparent) 56%, color-mix(in oklab, var(--cinema-indigo) 70%, transparent)),
+    linear-gradient(180deg, color-mix(in oklab, var(--background) 20%, transparent), color-mix(in oklab, var(--background) 74%, transparent));
+}
+
+.landing-cinema::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 74% 42%, color-mix(in oklab, var(--cinema-gold) 12%, transparent), transparent 30rem),
+    linear-gradient(180deg, transparent 55%, color-mix(in oklab, var(--background) 55%, transparent));
+}
+
+.landing-cinema .command-bar {
+  border-color: color-mix(in oklab, white 18%, transparent);
+  background: color-mix(in oklab, var(--background) 48%, transparent);
+  box-shadow: 0 28px 90px -35px color-mix(in oklab, black 88%, transparent);
+}
+
+@media (max-width: 767px) {
+  .landing-cinema__visual {
+    inset: -2% -30%;
+  }
+
+  .landing-cinema__visual canvas {
+    transform: scale(1.35) translateX(5%) translateY(-8%);
+  }
+
+  .krishna-static-fallback {
+    transform: scale(0.86) translateY(-12%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -231,5 +309,13 @@
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+  }
+
+  .landing-cinema__visual canvas {
+    opacity: 0.35;
+  }
+
+  .krishna-static-fallback {
+    opacity: 0.16;
   }
 }

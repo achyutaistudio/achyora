@@ -5,18 +5,26 @@ import { Menu, X } from "lucide-react";
 import { AchyoraWordmark } from "@/components/brand/AchyoraMark";
 import { UserMenu } from "@/components/UserMenu";
 import { useSession } from "@/hooks/useSession";
+import { cn } from "@/lib/utils";
 
 const LINKS = [
   { to: "/pricing", label: "Pricing" },
   { to: "/sanatan", label: "Sanatan Research" },
 ] as const;
 
-export function SiteHeader() {
+export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
   const { user, loading } = useSession();
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+    <header
+      className={cn(
+        "sticky top-0 z-40 border-b backdrop-blur-xl",
+        overlay
+          ? "border-white/10 bg-[#080b15]/35 text-white backdrop-blur-md"
+          : "border-border/60 bg-background/80",
+      )}
+    >
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
         <AchyoraWordmark />
 
@@ -67,12 +75,15 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-1 md:hidden">
           {loading ? null : user ? <UserMenu user={user} /> : null}
-          <button
+            <button
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-label={open ? "Close menu" : "Open menu"}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border"
+            className={cn(
+              "inline-flex h-10 w-10 items-center justify-center rounded-xl border",
+              overlay ? "border-white/15 bg-white/5" : "border-border",
+            )}
           >
             {open ? <X className="h-4.5 w-4.5" /> : <Menu className="h-4.5 w-4.5" />}
           </button>
@@ -80,7 +91,12 @@ export function SiteHeader() {
       </div>
 
       {open ? (
-        <div className="border-t border-border/60 bg-background md:hidden">
+        <div
+          className={cn(
+            "border-t md:hidden",
+            overlay ? "border-white/10 bg-[#080b15]/90" : "border-border/60 bg-background",
+          )}
+        >
           <nav
             className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 py-4"
             aria-label="Mobile"

@@ -24,7 +24,7 @@ export function WorkspacePage({
   return (
     <div
       className={cn(
-        "mx-auto w-full px-4 py-8 sm:px-8 sm:py-10",
+        "workspace-page mx-auto w-full px-4 py-8 sm:px-8 sm:py-10",
         width === "reading" ? "max-w-3xl" : width === "wide" ? "max-w-6xl" : "max-w-none",
         className,
       )}

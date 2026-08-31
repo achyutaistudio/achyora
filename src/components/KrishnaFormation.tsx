@@ -240,8 +240,15 @@ export function KrishnaFormation({ className }: { className?: string }) {
   }, []);
 
   return (
-    <div ref={wrapRef} aria-hidden="true" className={className}>
-      <canvas ref={canvasRef} className="h-full w-full" />
+    <div ref={wrapRef} aria-hidden="true" className={`relative overflow-hidden ${className ?? ""}`}>
+      <img
+        src={maskUrl}
+        alt=""
+        width={512}
+        height={512}
+        className="krishna-static-fallback absolute inset-0 h-full w-full object-contain"
+      />
+      <canvas ref={canvasRef} className="relative h-full w-full" />
     </div>
   );
 }

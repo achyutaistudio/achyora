@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { ArrowUp, Plus, Square, X } from "lucide-react";
+import { ArrowUp, Command, Plus, Square, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -30,6 +30,17 @@ export function Composer({
   const [files, setFiles] = useState<File[]>([]);
   const ref = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    function focusCommandBar(event: globalThis.KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        ref.current?.focus();
+      }
+    }
+    window.addEventListener("keydown", focusCommandBar);
+    return () => window.removeEventListener("keydown", focusCommandBar);
+  }, []);
 
   // Prefill (e.g. a question handed over from another surface) is applied once
   // per distinct value and never clobbers what the user is currently typing.
@@ -70,9 +81,10 @@ export function Composer({
   return (
     <form onSubmit={handleSubmit} className="w-full">
       <div
+        data-command-bar="true"
         className={cn(
-          "ach-glass group relative flex w-full items-end gap-2 rounded-2xl px-2.5 py-2.5 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)] transition-colors focus-within:border-ring/70",
-          size === "lg" ? "sm:px-3 sm:py-3" : "",
+          "command-bar ach-glass group relative flex w-full items-end gap-2 rounded-[1.35rem] px-2.5 py-2.5 shadow-[0_26px_70px_-34px_rgba(0,0,0,0.95)] transition-all focus-within:border-ring/80 focus-within:shadow-[0_24px_80px_-32px_color-mix(in_oklab,var(--ice)_35%,transparent)]",
+          size === "lg" ? "sm:px-3.5 sm:py-3.5" : "",
           disabled && "opacity-60",
         )}
       >
@@ -101,7 +113,7 @@ export function Composer({
               title="Attach a file or photo"
               className="mb-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-secondary/60 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
             >
-              <Plus className="h-5 w-5" />
+              <Plus className="h-[1.1rem] w-[1.1rem]" />
             </button>
           </>
         ) : null}
@@ -116,8 +128,8 @@ export function Composer({
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={cn(
-            "max-h-[220px] w-full resize-none overflow-y-auto bg-transparent px-1 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+            className={cn(
+              "max-h-[220px] w-full resize-none overflow-y-auto bg-transparent px-1 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
             size === "lg" ? "text-base sm:text-[1.05rem]" : "text-sm sm:text-base",
           )}
         />
@@ -137,7 +149,7 @@ export function Composer({
             aria-label="Send message"
             className="mb-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-foreground text-background transition-opacity hover:opacity-90 disabled:opacity-40"
           >
-            <ArrowUp className="h-5 w-5" />
+            <ArrowUp className="h-[1.1rem] w-[1.1rem]" />
           </button>
         )}
       </div>
@@ -163,7 +175,14 @@ export function Composer({
         </ul>
       ) : null}
 
-      {hint ? <p className="mt-2 px-1 text-xs text-muted-foreground">{hint}</p> : null}
+      <div className="mt-2 flex items-center justify-between gap-3 px-1">
+        {hint ? <p className="min-w-0 truncate text-xs text-muted-foreground">{hint}</p> : <span />}
+        <span className="hidden shrink-0 items-center gap-1 text-[0.65rem] text-muted-foreground sm:inline-flex">
+          <Command className="h-3 w-3" aria-hidden="true" />
+          <span>K</span>
+          <span className="sr-only">to focus</span>
+        </span>
+      </div>
     </form>
   );
 }

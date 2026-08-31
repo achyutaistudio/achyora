@@ -31,6 +31,7 @@ import { listConversations } from "@/lib/achyora.functions";
 import { cn } from "@/lib/utils";
 
 const PRIMARY_NAV = [
+  { to: "/workspace/chat", label: "Chat", icon: MessageSquarePlus },
   { to: "/workspace/image", label: "Image", icon: ImageIcon },
   { to: "/workspace/library", label: "Library", icon: FolderClosed },
   { to: "/workspace/sanatan", label: "Sanatan", icon: BookOpenText, avatar: true },
@@ -238,7 +239,7 @@ export function WorkspaceSidebar({
   return (
     <div
       className={cn(
-        "flex h-full flex-col border-r border-sidebar-border bg-sidebar",
+        "flex h-full flex-col border-r border-sidebar-border/70 bg-sidebar/95 backdrop-blur-xl",
         collapsed ? "px-2 py-4" : "px-3 py-4",
       )}
     >
@@ -258,7 +259,7 @@ export function WorkspaceSidebar({
 
       <nav
         aria-label="Workspace"
-        className="relative mt-6 min-h-0 flex flex-1 flex-col overflow-visible"
+        className="relative mt-7 min-h-0 flex flex-1 flex-col overflow-visible"
       >
         <NewChatButton collapsed={collapsed} {...(onNavigate ? { onNavigate } : {})} />
 

@@ -6,6 +6,7 @@ import { Menu, X } from "lucide-react";
 
 import { LoadingState } from "@/components/States";
 import { WorkspaceSidebar } from "@/components/workspace/WorkspaceSidebar";
+import { AchyoraWordmark } from "@/components/brand/AchyoraMark";
 import { useSession } from "@/hooks/useSession";
 import { useCreditVisibility } from "@/hooks/useCreditVisibility";
 import { waitForSession } from "@/lib/auth-session";
@@ -87,7 +88,7 @@ function WorkspaceLayout() {
   }, [navigate, bootstrapAccount]);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
+    <div className="workspace-shell flex h-screen w-full overflow-hidden bg-background">
       {/* Desktop rail — the single navigation surface. */}
       <aside
         className={cn(
@@ -119,7 +120,7 @@ function WorkspaceLayout() {
       ) : null}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/50 px-4 sm:px-6">
+        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/40 bg-background/70 px-4 backdrop-blur-xl sm:px-6">
           <button
             type="button"
             onClick={() => setMobileOpen((v) => !v)}
@@ -128,6 +129,12 @@ function WorkspaceLayout() {
           >
             {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </button>
+
+          <AchyoraWordmark to="/workspace/chat" className="lg:hidden [&_img]:h-7 [&_img]:w-7 [&_span_span]:text-[0.78rem]" />
+
+          <p className="hidden text-xs uppercase tracking-[0.18em] text-muted-foreground lg:block">
+            Ask · Create · Understand
+          </p>
 
           <div className="ml-auto flex items-center gap-2">
             {ready && showCredits ? <CreditChip /> : null}

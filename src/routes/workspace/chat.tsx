@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronDown, Mic, Paperclip, Sparkles } from "lucide-react";
 
 import { toast } from "sonner";
 
@@ -257,34 +258,37 @@ function ChatSurface() {
   // or React does with the event (double click, remount, duplicated handler).
   const submitOnce = useSingleFlight((value: string) => submit(value));
   const regenerateOnce = useSingleFlight(() => regenerate());
+  const starters = [
+    "Research the history of Jagannath",
+    "Write a practical business plan",
+    "Explain this Sanskrit verse",
+  ];
 
   return (
     <WorkspacePage
       width="full"
-      className="flex min-h-full flex-col gap-6 px-4 py-6 sm:px-6 lg:px-10"
+      className="flex min-h-full flex-col px-4 py-5 sm:px-6 lg:px-10"
     >
-      <section className="min-w-0 flex-1">
+      <section className="mx-auto flex w-full min-w-0 max-w-4xl flex-1 flex-col">
         <div className="flex flex-wrap items-center gap-2">
-          <label
-            htmlFor="model"
-            className="text-xs uppercase tracking-[0.16em] text-muted-foreground"
-          >
-            Model
+          <label className="relative inline-flex items-center">
+            <span className="sr-only">Model</span>
+            <select
+              id="model"
+              value={modelId}
+              onChange={(e) => setModelId(e.target.value)}
+              className="appearance-none rounded-full border border-border/70 bg-secondary/55 py-1.5 pl-3 pr-8 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {models.length === 0 ? <option value="">No model configured</option> : null}
+              {models.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2.5 h-3.5 w-3.5 text-muted-foreground" />
           </label>
-          <select
-            id="model"
-            value={modelId}
-            onChange={(e) => setModelId(e.target.value)}
-            className="rounded-xl border border-input bg-secondary px-2.5 py-1.5 text-sm text-foreground"
-          >
-            {models.length === 0 ? <option value="">No model configured</option> : null}
-            {models.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.label}
-              </option>
-            ))}
-          </select>
-          <label className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">
+          <label className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
             <input
               type="checkbox"
               checked={compareMode}
@@ -294,7 +298,7 @@ function ChatSurface() {
               }}
               className="h-4 w-4 rounded border-input"
             />
-            Compare models
+            Compare
           </label>
         </div>
 
@@ -325,7 +329,7 @@ function ChatSurface() {
           </div>
         ) : null}
 
-        <div className="mt-6 min-h-[40vh]">
+        <div className="flex min-h-[48vh] flex-1 flex-col justify-center py-8">
           {error ? (
             <ErrorState {...(error.code ? { code: error.code } : {})} message={error.message} />
           ) : null}
@@ -344,10 +348,29 @@ function ChatSurface() {
               ))}
             </div>
           ) : messages.length === 0 && !pending ? (
-            <EmptyState
-              title="Start a conversation"
-              description="Ask anything. Your conversations are saved privately to your account."
-            />
+            <div className="mx-auto w-full max-w-2xl text-center">
+              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl border border-border/70 bg-secondary/45 text-primary">
+                <Sparkles className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <h1 className="mt-5 text-balance text-2xl font-semibold tracking-[-0.035em] text-foreground sm:text-3xl">
+                What can I help you make sense of?
+              </h1>
+              <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
+                Ask naturally. ACHYORA will use the real model configured for this workspace.
+              </p>
+              <div className="mt-6 flex flex-wrap justify-center gap-2">
+                {starters.map((starter) => (
+                  <button
+                    key={starter}
+                    type="button"
+                    onClick={() => void submitOnce(starter)}
+                    className="rounded-full border border-border/70 bg-secondary/35 px-3.5 py-2 text-xs text-muted-foreground transition-colors hover:border-ring/50 hover:text-foreground"
+                  >
+                    {starter}
+                  </button>
+                ))}
+              </div>
+            </div>
           ) : (
             <MessageList
               messages={messages}
@@ -361,7 +384,7 @@ function ChatSurface() {
           ) : null}
         </div>
 
-        <div className="sticky bottom-0 mt-6 pb-1 pt-2">
+        <div className="sticky bottom-0 mt-auto bg-gradient-to-t from-background via-background/95 to-transparent pb-2 pt-6">
           <Composer
             onSubmit={(v) => void submitOnce(v)}
             onStop={stop}
@@ -371,6 +394,14 @@ function ChatSurface() {
             placeholder={compareMode ? "Prompt every selected model…" : "Ask ACHYORA anything…"}
             hint={compareMode ? "Comparison costs 1 credit per model." : "1 credit per message."}
           />
+          <nav className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground" aria-label="Quick tools">
+            <a href="/workspace/library" className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-colors hover:bg-secondary hover:text-foreground">
+              <Paperclip className="h-3.5 w-3.5" /> Library
+            </a>
+            <a href="/workspace/voice" className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-colors hover:bg-secondary hover:text-foreground">
+              <Mic className="h-3.5 w-3.5" /> Voice
+            </a>
+          </nav>
         </div>
       </section>
     </WorkspacePage>
